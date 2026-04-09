@@ -1,0 +1,8 @@
+node_modules
+.remotion
+dist
+out
+.vercel
+*.mp4
+.DS_Store
+temp_render.yml
