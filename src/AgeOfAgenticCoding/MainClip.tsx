@@ -1,28 +1,15 @@
-import React from "react";
-import { Sequence, Series } from "remotion";
-import { AnimatedBackground } from "./AnimatedBackground";
+import { Series, useVideoConfig } from "remotion";
 import { TitleScene } from "./TitleScene";
-import { AgentVisual } from "./AgentVisual";
-import { OutroScene } from "./OutroScene";
 
-export const MainClip: React.FC = () => {
+export const MainClip = () => {
+  const { fps } = useVideoConfig(); // Fetch the current composition's frame rate
+
   return (
-    <div style={{ flex: 1, backgroundColor: "black" }}>
-      <AnimatedBackground />
-
-      <Series>
-        <Series.Sequence durationInFrames={420}>
-          <TitleScene />
-        </Series.Sequence>
-        
-        <Series.Sequence durationInFrames={900}>
-          <AgentVisual />
-        </Series.Sequence>
-        
-        <Series.Sequence durationInFrames={480}>
-          <OutroScene />
-        </Series.Sequence>
-      </Series>
-    </div>
+    <Series>
+      {/* Multiply desired seconds (5) by the frame rate */}
+      <Series.Sequence durationInFrames={5 * fps}> 
+        <TitleScene />
+      </Series.Sequence>
+    </Series>
   );
 };

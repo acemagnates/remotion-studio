@@ -1,71 +1,75 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
+import { ThreeCanvas } from "@remotion/three";
+import { ObsidianElement } from "./ObsidianElement";
 
 export const TitleScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { width, height, fps } = useVideoConfig();
 
+  // Entrance animations
   const entrance = spring({
     frame,
     fps,
-    config: {
-      damping: 12,
-      stiffness: 100,
-    },
+    config: { damping: 15 },
   });
 
-  const slam = spring({
-    frame: frame - 45, // Delay the slam
-    fps,
-    config: {
-      damping: 8,
-      mass: 2,
-    },
-  });
-
-  const topTextOffset = interpolate(entrance, [0, 1], [-100, 0]);
-  const bottomTextScale = slam > 0 ? interpolate(slam, [0, 1], [3, 1]) : 0;
-  const bottomTextOpacity = slam > 0 ? interpolate(slam, [0, 0.2], [0, 1]) : 0;
+  const textOpacity = interpolate(frame, [20, 50], [0, 1]);
+  const textScale = interpolate(entrance, [0, 1], [0.8, 1]);
 
   return (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        color: "white",
-        fontFamily: "'Inter', sans-serif",
-        textAlign: "center",
-      }}
-    >
+    <div style={{ flex: 1, backgroundColor: "black", position: "relative" }}>
+      {/* 3D Background / Element */}
+      <ThreeCanvas width={width} height={height}>
+        <ambientLight intensity={0.2} />
+        <pointLight position={[10, 10, 10]} intensity={1.5} color="#FFD700" />
+        <pointLight position={[-10, -10, 10]} intensity={0.5} color="#4a9eff" />
+        <ObsidianElement />
+      </ThreeCanvas>
+
+      {/* Overlay Text */}
       <div
         style={{
-          fontSize: 60,
-          fontWeight: 300,
-          letterSpacing: 20,
-          opacity: entrance,
-          transform: `translateY(${topTextOffset}px)`,
-          color: "rgba(255, 255, 255, 0.7)",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          pointerEvents: "none",
         }}
       >
-        THE AGE OF
-      </div>
-      <div
-        style={{
-          fontSize: 120,
-          fontWeight: 900,
-          letterSpacing: -5,
-          marginTop: 20,
-          transform: `scale(${bottomTextScale})`,
-          opacity: bottomTextOpacity,
-          color: "#00ff96",
-          textShadow: "0 0 30px rgba(0, 255, 150, 0.5)",
-          lineHeight: 0.9,
-        }}
-      >
-        AGENTIC<br />CODING
+        <div
+          style={{
+            fontSize: 60,
+            fontWeight: 200,
+            letterSpacing: 25,
+            color: "white",
+            opacity: textOpacity,
+            transform: `scale(${textScale}) translateY(-200px)`,
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          ACE MAGNATES
+        </div>
+        
+        <div
+          style={{
+            fontSize: 100,
+            fontWeight: 900,
+            letterSpacing: -5,
+            color: "#FFD700",
+            opacity: textOpacity,
+            transform: `scale(${textScale}) translateY(250px)`,
+            fontFamily: "Inter, sans-serif",
+            textShadow: "0 0 40px rgba(255, 215, 0, 0.3)",
+          }}
+        >
+          AGENTIC CODING
+        </div>
       </div>
     </div>
   );
