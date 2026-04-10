@@ -14,7 +14,7 @@ async function syncRender() {
   
   try {
     // 1. Trigger the workflow
-    execSync(`gh workflow run cloud-render.yml -f composition=${composeId}`, { stdio: 'inherit' });
+    execSync(`gh workflow run render.yml -f composition=${composeId}`, { stdio: 'inherit' });
     
     console.log("⏳ Waiting for GitHub Actions to pick up the job...");
     // Wait a few seconds for GitHub to register the run
@@ -33,7 +33,7 @@ async function syncRender() {
     const tempDir = path.join(outFolder, 'temp_dl');
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
     
-    execSync(`gh run download ${latestRunId} -n rendered-video -D ${tempDir}`, { stdio: 'inherit' });
+    execSync(`gh run download ${latestRunId} -n ace-magnates-render -D ${tempDir}`, { stdio: 'inherit' });
 
     // 4. Move to final destination
     const sourceFile = path.join(tempDir, 'video.mp4');
