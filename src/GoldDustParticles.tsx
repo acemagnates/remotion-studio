@@ -24,7 +24,7 @@ export const GoldDustParticles = () => {
 
   return (
     <AbsoluteFill>
-      <ThreeCanvas width={width} height={height} alpha>
+      <ThreeCanvas width={width} height={height} gl={{ alpha: true }}>
         <ambientLight intensity={0.5} />
         {particles.map((p, i) => (
           <mesh
