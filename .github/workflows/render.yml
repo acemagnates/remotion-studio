@@ -25,40 +25,48 @@ jobs:
       - name: Ensure Browser
         run: npx remotion browser ensure
         
-      - name: Create Obsidian Vault Directory
-        run: mkdir -p obsidian-vault
+      - name: Create Output Directory
+        run: mkdir -p test-clips
         
-      - name: Render Clip-02 (40M Slam - SOLID)
-        run: npx remotion render src/index.ts clip-02-MG-40m-slam obsidian-vault/clip-02-MG-40m-slam.mp4 --gl=angle
+      - name: Render Smartest Building
+        run: npx remotion render src/index.ts SmartestBuilding test-clips/smartest-building.mp4 --gl=angle
         
-      - name: Render Clip-04 (Client Terminated - TRANSPARENT)
-        run: npx remotion render src/index.ts clip-04-MG-client-terminated obsidian-vault/clip-04-MG-client-terminated.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-01 (Burning Phone)
+        run: npx remotion render src/index.ts Clip-01-MG test-clips/clip-01.mp4 --gl=angle
         
-      - name: Render Clip-06 (Timestamp - TRANSPARENT)
-        run: npx remotion render src/index.ts clip-06-MG-time-stamp obsidian-vault/clip-06-MG-time-stamp.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-02 (Classified Terminal)
+        run: npx remotion render src/index.ts Clip-02-MG test-clips/clip-02.mp4 --gl=angle
         
-      - name: Render Clip-07 (Margin Crush - SOLID)
-        run: npx remotion render src/index.ts clip-07-MG-margin-crush obsidian-vault/clip-07-MG-margin-crush.mp4 --gl=angle
+      - name: Render Clip-04 (Reality Overlay)
+        run: npx remotion render src/index.ts Clip-04-MG test-clips/clip-04.mp4 --gl=angle
         
-      - name: Render Clip-11 (Profits Chart - SOLID)
-        run: npx remotion render src/index.ts clip-11-MG-profits-chart obsidian-vault/clip-11-MG-profits-chart.mp4 --gl=angle
+      - name: Render Clip-05 (View Counter Streak)
+        run: npx remotion render src/index.ts Clip-05-MG test-clips/clip-05.mp4 --gl=angle
         
-      - name: Render Clip-15 (Bankrupt Vibrate - TRANSPARENT)
-        run: npx remotion render src/index.ts clip-15-MG-bankrupt-vibrate obsidian-vault/clip-15-MG-bankrupt-vibrate.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-06 (Glitch Scoreboard)
+        run: npx remotion render src/index.ts Clip-06-MG test-clips/clip-06.mp4 --gl=angle
         
-      - name: Render Clip-17 (Kintsugi Reveal - TRANSPARENT)
-        run: npx remotion render src/index.ts clip-17-MG-kintsugi-reveal obsidian-vault/clip-17-MG-kintsugi-reveal.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-09 (Laptop UI Counter)
+        run: npx remotion render src/index.ts Clip-09-MG test-clips/clip-09.mp4 --gl=angle
         
-      - name: Render Clip-23 (Zero Resistance - TRANSPARENT)
-        run: npx remotion render src/index.ts clip-23-MG-zero-resistance obsidian-vault/clip-23-MG-zero-resistance.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-11 (Icon Sequence)
+        run: npx remotion render src/index.ts Clip-11-MG test-clips/clip-11.mp4 --gl=angle
         
-      - name: Render Clip-24 (Lose Edge - SOLID)
-        run: npx remotion render src/index.ts clip-24-MG-lose-edge obsidian-vault/clip-24-MG-lose-edge.mp4 --gl=angle
-
-      - name: Upload Obsidian Vault Artifact
+      - name: Render Clip-13 (Eye Vault Morph)
+        run: npx remotion render src/index.ts Clip-13-MG test-clips/clip-13.mp4 --gl=angle
+        
+      - name: Render Clip-14 (Atmospheric Particles)
+        run: npx remotion render src/index.ts Clip-14-MG test-clips/clip-14.mp4 --gl=angle
+        
+      - name: Render Clip-15 (Paid In Full Stamp)
+        run: npx remotion render src/index.ts Clip-15-MG test-clips/clip-15.mp4 --gl=angle
+        
+      - name: Render Clip-16 (Audience Customer)
+        run: npx remotion render src/index.ts Clip-16-MG test-clips/clip-16.mp4 --gl=angle
+        
+      - name: Upload Clips Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: obsidian-vault-clips
-          path: obsidian-vault/
+          name: ace-magnates-clips
+          path: test-clips/
           retention-days: 5
-

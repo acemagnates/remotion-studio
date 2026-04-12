@@ -19,6 +19,10 @@ trigger: always_on
   * *Allowed Video:* `https://remotion.media/video.mp4`
   * *Allowed Audio:* `https://remotion.media/audio.mp3`
 * **Three.js:** Wrap all 3D content in `<ThreeCanvas>`. Never use `@react-three/fiber`'s `useFrame()`.
+* **Transparency Law (React):** If a clip is marked as `TRANSPARENT`, you MUST NOT set a `backgroundColor` on the root `<AbsoluteFill>`. It must remain natively transparent.
+* **Transparency Law (Three.js):** To ensure 3D layers do not render a black background, you MUST pass the alpha prop to the canvas: `<ThreeCanvas alpha={true}>`.
+* **CapCut Render Flags (CRITICAL):** Do not render transparent WebM files. CapCut struggles with them. When the user asks you to render a transparent overlay, you MUST use the ProRes 4444 codec to generate a `.mov` file. Use this exact command:
+  `npx remotion render src/index.ts MainScene out.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le`
 
 ## 3. Dependency Management (PRE-EMPTIVE & SAFE)
 To prevent NPM peer dependency conflicts and Windows PowerShell syntax errors, you MUST run terminal commands one at a time and strictly use the `--legacy-peer-deps` flag.
@@ -94,7 +98,7 @@ export const MainScene = () => {
   const rotationY = frame * 0.02;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#F3F4F6" }}>
+    <AbsoluteFill>
       <AbsoluteFill style={{ opacity: 0.3 }}>
          <Video 
            src="https://remotion.media/video.mp4" 
