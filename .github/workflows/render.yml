@@ -6,7 +6,7 @@ on:
 
 jobs:
   render:
-    name: Render Remotion Video
+    name: Render Remotion Clips
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
           node-version: '20'
           
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
         
       - name: Install OS Dependencies
         run: sudo apt-get update && sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libpango-1.0-0 libcairo2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2
@@ -25,15 +25,40 @@ jobs:
       - name: Ensure Browser
         run: npx remotion browser ensure
         
-      - name: Create Output Directory
-        run: mkdir -p out
+      - name: Create Obsidian Vault Directory
+        run: mkdir -p obsidian-vault
         
-      - name: Render Roman Empire Video
-        run: npx remotion render src/index.ts RomanEmpireScene out/roman_empire.mp4 --gl=angle
+      - name: Render Clip-02 (40M Slam - SOLID)
+        run: npx remotion render src/index.ts clip-02-MG-40m-slam obsidian-vault/clip-02-MG-40m-slam.mp4 --gl=angle
         
-      - name: Upload Video Artifact
+      - name: Render Clip-04 (Client Terminated - TRANSPARENT)
+        run: npx remotion render src/index.ts clip-04-MG-client-terminated obsidian-vault/clip-04-MG-client-terminated.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+        
+      - name: Render Clip-06 (Timestamp - TRANSPARENT)
+        run: npx remotion render src/index.ts clip-06-MG-time-stamp obsidian-vault/clip-06-MG-time-stamp.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+        
+      - name: Render Clip-07 (Margin Crush - SOLID)
+        run: npx remotion render src/index.ts clip-07-MG-margin-crush obsidian-vault/clip-07-MG-margin-crush.mp4 --gl=angle
+        
+      - name: Render Clip-11 (Profits Chart - SOLID)
+        run: npx remotion render src/index.ts clip-11-MG-profits-chart obsidian-vault/clip-11-MG-profits-chart.mp4 --gl=angle
+        
+      - name: Render Clip-15 (Bankrupt Vibrate - TRANSPARENT)
+        run: npx remotion render src/index.ts clip-15-MG-bankrupt-vibrate obsidian-vault/clip-15-MG-bankrupt-vibrate.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+        
+      - name: Render Clip-17 (Kintsugi Reveal - TRANSPARENT)
+        run: npx remotion render src/index.ts clip-17-MG-kintsugi-reveal obsidian-vault/clip-17-MG-kintsugi-reveal.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+        
+      - name: Render Clip-23 (Zero Resistance - TRANSPARENT)
+        run: npx remotion render src/index.ts clip-23-MG-zero-resistance obsidian-vault/clip-23-MG-zero-resistance.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+        
+      - name: Render Clip-24 (Lose Edge - SOLID)
+        run: npx remotion render src/index.ts clip-24-MG-lose-edge obsidian-vault/clip-24-MG-lose-edge.mp4 --gl=angle
+
+      - name: Upload Obsidian Vault Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: roman-empire-render
-          path: out/roman_empire.mp4
-          retention-days: 1
+          name: obsidian-vault-clips
+          path: obsidian-vault/
+          retention-days: 5
+
