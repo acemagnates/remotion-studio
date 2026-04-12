@@ -28,32 +28,39 @@ jobs:
       - name: Create Output Directory
         run: mkdir -p test-clips
         
-      - name: Render Clip-02 ($40M Slam)
-        run: npx remotion render src/index.ts clip-02-MG-40m-slam test-clips/clip-02-40m-slam.mp4 --gl=angle
+      - name: Render Clip-01-MG (Taco Stand)
+        run: npx remotion render src/index.ts clip-01-MG-taco-stand test-clips/clip-01-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-04 (Client Terminated)
-        run: npx remotion render src/index.ts clip-04-MG-client-terminated test-clips/clip-04-client-terminated.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-03-MG (Data Split)
+        run: npx remotion render src/index.ts clip-03-MG-data-split test-clips/clip-03-MG.mp4 --gl=angle
         
-      - name: Render Clip-06 (Timestamp)
-        run: npx remotion render src/index.ts clip-06-MG-time-stamp test-clips/clip-06-time-stamp.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-05-MG (Location Stamp)
+        run: npx remotion render src/index.ts clip-05-MG-location-stamp test-clips/clip-05-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-07 (Margin Crush)
-        run: npx remotion render src/index.ts clip-07-MG-margin-crush test-clips/clip-07-margin-crush.mp4 --gl=angle
+      - name: Render Clip-07-MG (Four Lines)
+        run: npx remotion render src/index.ts clip-07-MG-four-lines test-clips/clip-07-MG.mp4 --gl=angle
         
-      - name: Render Clip-11 (Profits Chart)
-        run: npx remotion render src/index.ts clip-11-MG-profits-chart test-clips/clip-11-profits-chart.mp4 --gl=angle
+      - name: Render Clip-11-MG (Thats It)
+        run: npx remotion render src/index.ts clip-11-MG-thats-it test-clips/clip-11-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-15 (Bankrupt Vibrate)
-        run: npx remotion render src/index.ts clip-15-MG-bankrupt-vibrate test-clips/clip-15-bankrupt-vibrate.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-13-MG (Flash Montage)
+        run: npx remotion render src/index.ts clip-13-MG-flash-montage test-clips/clip-13-MG.mp4 --gl=angle
         
-      - name: Render Clip-17 (Kintsugi Reveal)
-        run: npx remotion render src/index.ts clip-17-MG-kintsugi-reveal test-clips/clip-17-kintsugi-reveal.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-17-MG (Add More Strike)
+        run: npx remotion render src/index.ts clip-17-MG-add-more-strike test-clips/clip-17-MG.mp4 --gl=angle
         
-      - name: Render Clip-23 (Zero Resistance)
-        run: npx remotion render src/index.ts clip-23-MG-zero-resistance test-clips/clip-23-zero-resistance.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+      - name: Render Clip-19-MG (Gold Leak)
+        run: npx remotion render src/index.ts clip-19-MG-gold-leak test-clips/clip-19-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-24 (Lose Edge)
-        run: npx remotion render src/index.ts clip-24-MG-lose-edge test-clips/clip-24-lose-edge.mp4 --gl=angle
+      - name: Render Clip-20-MG (Gold Dust)
+        run: npx remotion render src/index.ts clip-20-MG-gold-dust test-clips/clip-20-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+        
+      - name: Render Clip-21-MG (Not Everything)
+        run: npx remotion render src/index.ts clip-21-MG-not-everything test-clips/clip-21-MG.mp4 --gl=angle
+        
+      - name: Render Clip-23-MG (Stand In Line)
+        run: npx remotion render src/index.ts clip-23-MG-stand-in-line test-clips/clip-23-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
+
         
       - name: Upload Clips Artifact
         uses: actions/upload-artifact@v4
