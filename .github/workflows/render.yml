@@ -28,41 +28,32 @@ jobs:
       - name: Create Output Directory
         run: mkdir -p test-clips
         
-      - name: Render Smartest Building
-        run: npx remotion render src/index.ts SmartestBuilding test-clips/smartest-building.mp4 --gl=angle
+      - name: Render Clip-02 ($40M Slam)
+        run: npx remotion render src/index.ts clip-02-MG-40m-slam test-clips/clip-02-40m-slam.mp4 --gl=angle
         
-      - name: Render Clip-01 (Burning Phone)
-        run: npx remotion render src/index.ts Clip-01-MG test-clips/clip-01.mp4 --gl=angle
+      - name: Render Clip-04 (Client Terminated)
+        run: npx remotion render src/index.ts clip-04-MG-client-terminated test-clips/clip-04-client-terminated.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-02 (Classified Terminal)
-        run: npx remotion render src/index.ts Clip-02-MG test-clips/clip-02.mp4 --gl=angle
+      - name: Render Clip-06 (Timestamp)
+        run: npx remotion render src/index.ts clip-06-MG-time-stamp test-clips/clip-06-time-stamp.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-04 (Reality Overlay)
-        run: npx remotion render src/index.ts Clip-04-MG test-clips/clip-04.mp4 --gl=angle
+      - name: Render Clip-07 (Margin Crush)
+        run: npx remotion render src/index.ts clip-07-MG-margin-crush test-clips/clip-07-margin-crush.mp4 --gl=angle
         
-      - name: Render Clip-05 (View Counter Streak)
-        run: npx remotion render src/index.ts Clip-05-MG test-clips/clip-05.mp4 --gl=angle
+      - name: Render Clip-11 (Profits Chart)
+        run: npx remotion render src/index.ts clip-11-MG-profits-chart test-clips/clip-11-profits-chart.mp4 --gl=angle
         
-      - name: Render Clip-06 (Glitch Scoreboard)
-        run: npx remotion render src/index.ts Clip-06-MG test-clips/clip-06.mp4 --gl=angle
+      - name: Render Clip-15 (Bankrupt Vibrate)
+        run: npx remotion render src/index.ts clip-15-MG-bankrupt-vibrate test-clips/clip-15-bankrupt-vibrate.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-09 (Laptop UI Counter)
-        run: npx remotion render src/index.ts Clip-09-MG test-clips/clip-09.mp4 --gl=angle
+      - name: Render Clip-17 (Kintsugi Reveal)
+        run: npx remotion render src/index.ts clip-17-MG-kintsugi-reveal test-clips/clip-17-kintsugi-reveal.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-11 (Icon Sequence)
-        run: npx remotion render src/index.ts Clip-11-MG test-clips/clip-11.mp4 --gl=angle
+      - name: Render Clip-23 (Zero Resistance)
+        run: npx remotion render src/index.ts clip-23-MG-zero-resistance test-clips/clip-23-zero-resistance.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --gl=angle
         
-      - name: Render Clip-13 (Eye Vault Morph)
-        run: npx remotion render src/index.ts Clip-13-MG test-clips/clip-13.mp4 --gl=angle
-        
-      - name: Render Clip-14 (Atmospheric Particles)
-        run: npx remotion render src/index.ts Clip-14-MG test-clips/clip-14.mp4 --gl=angle
-        
-      - name: Render Clip-15 (Paid In Full Stamp)
-        run: npx remotion render src/index.ts Clip-15-MG test-clips/clip-15.mp4 --gl=angle
-        
-      - name: Render Clip-16 (Audience Customer)
-        run: npx remotion render src/index.ts Clip-16-MG test-clips/clip-16.mp4 --gl=angle
+      - name: Render Clip-24 (Lose Edge)
+        run: npx remotion render src/index.ts clip-24-MG-lose-edge test-clips/clip-24-lose-edge.mp4 --gl=angle
         
       - name: Upload Clips Artifact
         uses: actions/upload-artifact@v4
@@ -70,3 +61,4 @@ jobs:
           name: ace-magnates-clips
           path: test-clips/
           retention-days: 5
+
