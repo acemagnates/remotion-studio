@@ -25,12 +25,15 @@ jobs:
       - name: Ensure Browser
         run: npx remotion browser ensure
         
-      - name: Render Video
-        run: npx remotion render AgeOfAgenticCoding out/video.mp4 --gl=angle
+      - name: Create Output Directory
+        run: mkdir -p out
+        
+      - name: Render Roman Empire Video
+        run: npx remotion render src/index.ts RomanEmpireScene out/roman_empire.mp4 --gl=angle
         
       - name: Upload Video Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ace-magnates-render
-          path: out/video.mp4
+          name: roman-empire-render
+          path: out/roman_empire.mp4
           retention-days: 1

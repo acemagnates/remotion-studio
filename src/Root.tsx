@@ -1,25 +1,16 @@
 import { Composition } from "remotion";
-import { MyComposition } from "./Composition";
-import { MainClip } from "./AgeOfAgenticCoding/MainClip";
+import { RomanEmpireScene } from "./RomanEmpireScene";
 
 export const RemotionRoot = () => {
   return (
     <>
       <Composition
-        id="AgeOfAgenticCoding"
-        component={MainClip}
-        durationInFrames={1800}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="Main"
-        component={MyComposition}
+        id="RomanEmpireScene"
+        component={RomanEmpireScene}
         durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
+        fps={30}
+        width={1920}
+        height={1080}
       />
     </>
   );
