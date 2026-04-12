@@ -24,6 +24,20 @@ import { KintsugiReveal } from "./KintsugiReveal";
 import { ZeroResistance } from "./ZeroResistance";
 import { LoseEdgeSlam } from "./LoseEdgeSlam";
 
+// Ace Magnates Batch 3 
+import { TacoStandSlam } from "./TacoStandSlam";
+import { DataSplitFracture } from "./DataSplitFracture";
+import { LocationStamp } from "./LocationStamp";
+import { NumberFourLines } from "./NumberFourLines";
+import { ThatsItRipple } from "./ThatsItRipple";
+import { WordFlashMontage } from "./WordFlashMontage";
+import { AddMoreStrike } from "./AddMoreStrike";
+import { GoldLightLeaks } from "./GoldLightLeaks";
+import { GoldDustParticles } from "./GoldDustParticles";
+import { NotEverythingFade } from "./NotEverythingFade";
+import { StandInLineDrop } from "./StandInLineDrop";
+
+
 export const RemotionRoot = () => {
   return (
     <>
@@ -99,6 +113,97 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
       />
+
+      {/* New Requested Clips Batch */}
+      <Composition
+        id="clip-01-MG-taco-stand"
+        component={TacoStandSlam}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-03-MG-data-split"
+        component={DataSplitFracture}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-05-MG-location-stamp"
+        component={LocationStamp}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-07-MG-four-lines"
+        component={NumberFourLines}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-11-MG-thats-it"
+        component={ThatsItRipple}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-13-MG-flash-montage"
+        component={WordFlashMontage}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-17-MG-add-more-strike"
+        component={AddMoreStrike}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-19-MG-gold-leak"
+        component={GoldLightLeaks}
+        durationInFrames={180} // 3.0s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-20-MG-gold-dust"
+        component={GoldDustParticles}
+        durationInFrames={210} // 3.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-21-MG-not-everything"
+        component={NotEverythingFade}
+        durationInFrames={150} // 2.5s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-23-MG-stand-in-line"
+        component={StandInLineDrop}
+        durationInFrames={180} // 3.0s
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+
 
       {/* Legacy/Original Clips */}
       <Composition

@@ -29,20 +29,26 @@ To prevent NPM peer dependency conflicts and Windows PowerShell syntax errors, y
 * **CRITICAL:** Do NOT use `&&` to chain commands in PowerShell. Run them sequentially as separate commands.
 * **CRITICAL:** ALWAYS append `--legacy-peer-deps` to any `npm install` command.
 
-## 4. Execution Pipeline (STRICT 3-STEP SEQUENCE)
+## 4. Execution Pipeline (STRICT 4-STEP SEQUENCE)
 **Phase 1: Code Generation**
 * Write the requested React code into the `src/` directory. Ensure dimensions match the requested format.
 * ALWAYS ensure `src/index.ts` exists and registers the Root component, otherwise the browser will render a blank screen.
 
-**Phase 2: Terminal Execution**
+**Phase 2: Terminal Execution & Verification**
 * Run Command 1: `npm install --legacy-peer-deps`
 * Run Command 2: `npm install @remotion/media @remotion/three --legacy-peer-deps`
-* Run Command 3: `npx remotion studio src/index.ts` (Do NOT force a specific port, let Remotion choose a free one).
-* *Failsafe:* If the terminal throws a Remotion "Version mismatch" error, run `npx remotion upgrade --legacy-peer-deps` to sync the package versions, then re-run Command 3.
+* *Failsafe:* If the terminal throws a Remotion "Version mismatch" error, run `npx remotion upgrade --legacy-peer-deps` to sync the package versions.
 
-**Phase 3: Handoff**
-* Once the terminal indicates the server is ready, HALT all tool usage immediately and output:
-> 🚀 **Code compiled and server started.** > I operate in headless mode to maximize speed. Please open the `localhost` link provided in the terminal to view the Remotion Studio.
+**Phase 3: GitHub Render & Artifact Download (DEFAULT ACTION)**
+* Once the code is successfully generated and verified locally, commit and push the changes to the repository.
+* Trigger the render with GitHub.
+* Then, continuously poll the workflow status using `gh run list`.
+* **CRITICAL:** Do not attempt to download the artifacts until the status explicitly says `completed` and `success`.
+* Once it succeeds, download the artifacts into their own dedicated folder.
+
+**Phase 4: Handoff**
+* Once the artifacts are downloaded safely to the local machine, HALT all tool usage immediately and output:
+> 🚀 **Code compiled, rendered via GitHub, and downloaded.** > I operate in headless mode to maximize speed. Your ready-to-edit clips are waiting in the dedicated folder!
 
 ---
 
@@ -138,3 +144,19 @@ export const MainScene = () => {
   );
 };
 ```
+
+## 6. HIGH-END PROCEDURAL VFX ARCHITECTURE
+
+To achieve the "Obsidian Vault" cinematic aesthetic using purely code (no external assets), you MUST use the following technical recipes:
+
+**1. Cinematic Gold Particles / Dust (DO NOT USE CSS DIVS):**
+If a prompt asks for drifting particles, you MUST use `@remotion/three` `<ThreeCanvas>`. Create a 3D scene mapping an array of 50+ `<mesh>` elements with `<sphereGeometry args={[0.05, 8, 8]} />` and `<meshBasicMaterial color="#C9A84C" />`. Animate their `position` and `rotation` in 3D space using `useCurrentFrame()` to create a depth-of-field drifting effect.
+
+**2. Kintsugi Fractures & Sharp Lines (DO NOT USE CSS BORDERS):**
+If a prompt asks for Kintsugi cracks, charts, or sharp lines, you MUST use `<svg>` and `<path>` combined with `@remotion/paths` (`evolvePath`). Add a glowing bloom effect to the SVG using `filter="drop-shadow(0px 0px 8px rgba(201, 168, 76, 0.8))"`. Generate organic, jagged coordinates for the path `d` attribute.
+
+**3. Glowing "Bloom" Typography:**
+Never use flat colors for text. To create the authoritative, glowing Obsidian Vault text, apply heavily stacked CSS text-shadows to stark white or gold text. Example: `textShadow: "0px 0px 10px rgba(201, 168, 76, 0.6), 0px 0px 20px rgba(201, 168, 76, 0.3), 0px 4px 10px rgba(0,0,0,0.8)"`.
+
+**4. Smoked Glass & Light Leaks:**
+If a prompt asks for a smoked glass background or cinematic lighting shifts, use `backdropFilter: "blur(24px) brightness(0.5)"` on an `<AbsoluteFill>` with `backgroundColor: "rgba(10, 10, 10, 0.6)"`. For cinematic lighting flares, import `<LightLeak>` from `@remotion/light-leaks` and use a gold hueShift.
