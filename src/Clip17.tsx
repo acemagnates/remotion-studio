@@ -1,13 +1,11 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
-import { useRef } from "react";
 
-const Ring = () => {
-  const frame = useCurrentFrame();
+const Ring = ({ frame, scale }: { frame: number, scale: number }) => {
   const rotation = (frame / 90) * Math.PI * 2; // one revolution every 3s
 
   return (
-    <group rotation={[0.3, rotation, 0]}>
+    <group rotation={[0.3, rotation, 0]} scale={[scale, scale, scale]}>
       <mesh>
         <torusGeometry args={[3, 0.08, 16, 100]} />
         <meshBasicMaterial color="#C9A84C" />
@@ -42,17 +40,15 @@ export const Clip17 = () => {
       }} />
 
       {/* Three.js Ring */}
-      <div style={{ position: "absolute", width: "100%", height: "100%", transform: `scale(${ringScale})` }}>
-        <ThreeCanvas width={width} height={height}>
-            <Ring />
-        </ThreeCanvas>
-      </div>
+      <ThreeCanvas width={width} height={height}>
+          <Ring frame={frame} scale={ringScale} />
+      </ThreeCanvas>
 
       {/* Text */}
-      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", transform: `scale(${textScale})` }}>
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", transform: `scale(${textScale})`, pointerEvents: "none" }}>
         <div style={{
             color: "#FFF",
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "sans-serif",
             fontSize: 180,
             fontWeight: 900,
             textShadow: "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)",
@@ -69,7 +65,7 @@ export const Clip17 = () => {
         width: "100%",
         textAlign: "center",
         color: "#C9A84C",
-        fontFamily: "Inter, sans-serif",
+        fontFamily: "sans-serif",
         fontSize: 42,
         fontWeight: 400,
         letterSpacing: "0.4em",
