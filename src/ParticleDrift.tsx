@@ -43,7 +43,7 @@ export const ParticleDrift = () => {
 
 	return (
 		<AbsoluteFill style={{ opacity }}>
-			<ThreeCanvas width={1080} height={1920} alpha={true} camera={{ position: [0, 0, 5] }}>
+			<ThreeCanvas alpha={true} camera={{ position: [0, 0, 5] }}>
 				<ambientLight intensity={0.5} />
 				<pointLight position={[5, 5, 5]} intensity={1} />
 				{new Array(20).fill(0).map((_, i) => (
