@@ -1,66 +1,93 @@
 import { Composition } from "remotion";
-import { Clip01 } from "./Clip01";
-import { Clip09 } from "./Clip09";
-import { Clip16 } from "./Clip16";
-import { Clip18 } from "./Clip18";
-import { Clip20 } from "./Clip20";
-import { Clip25 } from "./Clip25";
-import { Clip26 } from "./Clip26";
+import { CounterRoll } from "./CounterRoll";
+import { LowerThird } from "./LowerThird";
+import { SplitReveal } from "./SplitReveal";
+import { EvidenceCard } from "./EvidenceCard";
+import { ShatterBurst } from "./ShatterBurst";
+import { TerminalType } from "./TerminalType";
+import { DataTheater } from "./DataTheater";
+import { GlitchInterference } from "./GlitchInterference";
+import { ParticleDrift } from "./ParticleDrift";
+import { KintsugiReveal } from "./KintsugiReveal";
 
 export const RemotionRoot = () => {
   return (
     <>
       <Composition
-        id="clip-01-MG"
-        component={Clip01}
+        id="CounterRoll"
+        component={CounterRoll}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-09-MG"
-        component={Clip09}
+        id="LowerThird"
+        component={LowerThird}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-16-MG"
-        component={Clip16}
+        id="SplitReveal"
+        component={SplitReveal}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-18-MG"
-        component={Clip18}
+        id="EvidenceCard"
+        component={EvidenceCard}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-20-MG"
-        component={Clip20}
-        durationInFrames={180}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-25-MG"
-        component={Clip25}
+        id="ShatterBurst"
+        component={ShatterBurst}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-26-MG"
-        component={Clip26}
+        id="TerminalType"
+        component={TerminalType}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="DataTheater"
+        component={DataTheater}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="GlitchInterference"
+        component={GlitchInterference}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="ParticleDrift"
+        component={ParticleDrift}
+        durationInFrames={210}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="KintsugiReveal"
+        component={KintsugiReveal}
         durationInFrames={180}
         fps={60}
         width={1080}
