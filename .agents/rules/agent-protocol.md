@@ -14,9 +14,9 @@ trigger: always_on
 * **Default:** 9:16 vertical (1080×1920) at 60fps. Adapt only if user specifies otherwise.
 * **Animations:** ALL driven by `useCurrentFrame()`. NO CSS Keyframes, NO Framer Motion.
 * **Assets:** Do NOT use `staticFile()` unless user provides the file. Placeholders: `https://remotion.media/video.mp4` / `https://remotion.media/audio.mp3`
-* **Three.js:** Always `<ThreeCanvas>`. Never `useFrame()`.
+* **Three.js (CRITICAL):** You MUST pass `width` and `height` props to `<ThreeCanvas width={width} height={height}>` (get them from `useVideoConfig()`). Never use `useFrame()`.
 * **Transparency (React):** TRANSPARENT clips = NO `backgroundColor` on root `<AbsoluteFill>`.
-* **Transparency (Three.js):** Pass `<ThreeCanvas alpha={true}>`.
+* **Transparency (Three.js):** Pass `<ThreeCanvas alpha={true} width={width} height={height}>`.
 * **Render Command (CRITICAL):** `npx remotion render src/index.ts MainScene out.webm --image-format=png --codec=vp9 --pixel-format=yuva420p`
 * **Min Duration:** `durationInFrames` ≥ **150** (2.5s at 60fps). Round UP if shorter.
 
@@ -25,7 +25,7 @@ Run commands ONE AT A TIME in PowerShell. No `&&` chaining. ALWAYS use `--legacy
 * Version mismatch? Run `npx remotion upgrade --legacy-peer-deps`.
 
 ## 4. Execution Pipeline
-**Phase 1 — Code:** Clean slate first. Overwrite `src/Root.tsx` with ONLY current compositions. Ensure `src/index.ts` registers Root.
+**Phase 1 — Code:** Clean slate first. Overwrite `src/Root.tsx` with ONLY current compositions. **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested filename / clip ID (e.g., `id="clip-01-MG"`). Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
 **Phase 2 — Install:** `npm install --legacy-peer-deps` then `npm install @remotion/media @remotion/three --legacy-peer-deps`
 **Phase 3 — GitHub Render:** Commit, push, trigger workflow. Render = WebM VP9 ONLY (never ProRes/.mov). Poll `gh run list`. Download artifacts only after `completed` + `success`.
 **Phase 4 — Handoff:** Once downloaded, HALT and report: 🚀 Clips ready in the dedicated folder.
