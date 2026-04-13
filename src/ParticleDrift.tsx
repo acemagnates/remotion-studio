@@ -31,7 +31,7 @@ const DustMote = ({ seed }: { seed: number }) => {
 
 export const ParticleDrift = () => {
 	const frame = useCurrentFrame();
-	const { fps, durationInFrames } = useVideoConfig();
+	const { fps, durationInFrames, width, height } = useVideoConfig();
 
 	// Fade in/out
 	const opacity = interpolate(
@@ -43,7 +43,7 @@ export const ParticleDrift = () => {
 
 	return (
 		<AbsoluteFill style={{ opacity }}>
-			<ThreeCanvas alpha={true} camera={{ position: [0, 0, 5] }}>
+			<ThreeCanvas alpha={true} camera={{ position: [0, 0, 5] }} width={width} height={height}>
 				<ambientLight intensity={0.5} />
 				<pointLight position={[5, 5, 5]} intensity={1} />
 				{new Array(20).fill(0).map((_, i) => (

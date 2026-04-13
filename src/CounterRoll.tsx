@@ -34,7 +34,7 @@ const Particles = () => {
 
 export const CounterRoll = () => {
 	const frame = useCurrentFrame();
-	const { fps, durationInFrames } = useVideoConfig();
+	const { fps, durationInFrames, width, height } = useVideoConfig();
 
 	// ACT 1: ENTRANCE (0.5 - 1.0s)
 	const rollSpring = spring({
@@ -68,7 +68,7 @@ export const CounterRoll = () => {
 
 			{/* Three.js Particles in background */}
 			<AbsoluteFill>
-				<ThreeCanvas orthographic={false} camera={{ position: [0, 0, 5] }}>
+				<ThreeCanvas orthographic={false} camera={{ position: [0, 0, 5] }} width={width} height={height}>
 					<ambientLight intensity={0.5} />
 					<pointLight position={[10, 10, 10]} intensity={1} />
 					<Particles />
