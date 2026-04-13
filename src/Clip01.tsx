@@ -24,7 +24,7 @@ export const Clip01 = () => {
   const rollProgress = interpolate(frame, [24, 75], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
-    easing: Easing.out(Easing.expo)
+    easing: Easing.out(Easing.exp)
   });
 
   const getDigitRoll = (startDigit: number, endDigit: number, progress: number) => {
@@ -120,14 +120,14 @@ export const Clip01 = () => {
         }}>
             {/* Split roll for 47 -> 21 */}
             <div style={{ position: "relative", height: 500, overflow: "hidden" }}>
-                 <div style={{ transform: `translateY(${-interpolate(rollProgress, [0, 1], [0, 400], { easing: Easing.out(Easing.expo)}) }px)` }}>
+                 <div style={{ transform: `translateY(${-interpolate(rollProgress, [0, 1], [0, 400], { easing: Easing.out(Easing.exp)}) }px)` }}>
                     <div style={{ height: 500 }}>4</div>
                     <div style={{ height: 500 }}>3</div>
                     <div style={{ height: 500 }}>2</div>
                  </div>
             </div>
             <div style={{ position: "relative", height: 500, overflow: "hidden" }}>
-                 <div style={{ transform: `translateY(${-interpolate(rollProgress, [0, 1], [0, 1200], { easing: Easing.out(Easing.expo)}) }px)` }}>
+                 <div style={{ transform: `translateY(${-interpolate(rollProgress, [0, 1], [0, 1200], { easing: Easing.out(Easing.exp)}) }px)` }}>
                     <div style={{ height: 500 }}>7</div>
                     <div style={{ height: 500 }}>6</div>
                     <div style={{ height: 500 }}>5</div>

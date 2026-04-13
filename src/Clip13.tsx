@@ -13,7 +13,7 @@ export const Clip13 = () => {
   // Shard trajectories
   const burst = interpolate(frame, [0, 24], [0, 1], {
     extrapolateRight: "clamp",
-    easing: Easing.out(Easing.expo)
+    easing: Easing.out(Easing.exp)
   });
 
   const textSpring = spring({ frame, fps, delay: 15, config: { damping: 200 } });
