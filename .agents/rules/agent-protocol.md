@@ -31,6 +31,7 @@ To prevent NPM peer dependency conflicts and Windows PowerShell syntax errors, y
 
 ## 4. Execution Pipeline (STRICT 4-STEP SEQUENCE)
 **Phase 1: Code Generation**
+* **The Clean Slate Rule (CRITICAL):** Before writing any new React code, you MUST completely wipe the old project files. Overwrite `src/Root.tsx` so it ONLY contains the `<Composition>` tags for the current prompt. Delete or ignore all previous scene components. NEVER leave legacy clips from old projects in the codebase or the rendering workflow.
 * Write the requested React code into the `src/` directory. Ensure dimensions match the requested format.
 * ALWAYS ensure `src/index.ts` exists and registers the Root component, otherwise the browser will render a blank screen.
 
@@ -42,6 +43,7 @@ To prevent NPM peer dependency conflicts and Windows PowerShell syntax errors, y
 **Phase 3: GitHub Render & Artifact Download (DEFAULT ACTION)**
 * Once the code is successfully generated and verified locally, commit and push the changes to the repository.
 * Trigger the render with GitHub.
+* **Render Command Lock (CRITICAL):** Any transparent overlay render triggered for GitHub artifacts MUST use the Section 2 WebM VP9 command (`out.webm`, `--codec=vp9`, `--pixel-format=yuva420p`). NEVER trigger ProRes/`.mov` render commands.
 * Then, continuously poll the workflow status using `gh run list`.
 * **CRITICAL:** Do not attempt to download the artifacts until the status explicitly says `completed` and `success`.
 * Once it succeeds, download the artifacts into their own dedicated folder.

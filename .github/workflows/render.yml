@@ -26,41 +26,19 @@ jobs:
         run: npx remotion browser ensure
         
       - name: Create Output Directory
-        run: mkdir -p test-clips
+        run: mkdir -p renders/master-batch
         
-      - name: Render Clip-01-MG (2018 Slam)
-        run: npx remotion render src/index.ts clip-01-MG-2018 test-clips/clip-01-MG.mp4
-
-      - name: Render Clip-03-MG (Glass Shatter)
-        run: npx remotion render src/index.ts clip-03-MG-shatter test-clips/clip-03-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
-
-      - name: Render Clip-05-MG (Asset Secured)
-        run: npx remotion render src/index.ts clip-05-MG-secured test-clips/clip-05-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
-
-      - name: Render Clip-07-MG (Zoning Locked)
-        run: npx remotion render src/index.ts clip-07-MG-locked test-clips/clip-07-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
-
-      - name: Render Clip-09-MG (Cash Pop)
-        run: npx remotion render src/index.ts clip-09-MG-cash test-clips/clip-09-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
-
-      - name: Render Clip-10-MG (Monopoly Slam)
-        run: npx remotion render src/index.ts clip-10-MG-monopoly test-clips/clip-10-MG.mp4
-
-      - name: Render Clip-12-MG (Revenue Break)
-        run: npx remotion render src/index.ts clip-12-MG-break test-clips/clip-12-MG.mp4
-
-      - name: Render Clip-14-MG (400% Flash)
-        run: npx remotion render src/index.ts clip-14-MG-400 test-clips/clip-14-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
-
-      - name: Render Clip-16-MG (Competition)
-        run: npx remotion render src/index.ts clip-16-MG-competition test-clips/clip-16-MG.mp4
-
-      - name: Render Clip-20-MG (Maintenance Drop)
-        run: npx remotion render src/index.ts clip-20-MG-maintenance test-clips/clip-20-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
+      - name: Render Clip 01-20
+        run: |
+          for i in {01..20}; do
+            id="clip-$i"
+            echo "Rendering $id..."
+            npx remotion render src/index.ts $id renders/master-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuv420p
+          done
 
       - name: Upload Clips Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ace-magnates-obsidian-batch
-          path: test-clips/
+          name: ace-magnates-master-batch
+          path: renders/master-batch/
           retention-days: 5
