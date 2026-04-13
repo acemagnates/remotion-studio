@@ -1,176 +1,66 @@
-import { Composition, staticFile } from "remotion";
-import { Clip01_2018Slam } from "./Clip01_2018Slam";
-import { Clip10_UnbreakableMonopoly } from "./Clip10_UnbreakableMonopoly";
-import { Clip12_RevenueLineBreak } from "./Clip12_RevenueLineBreak";
-import { Clip16_EliminatingCompetition } from "./Clip16_EliminatingCompetition";
-import { StillOnly } from "./StillOnly";
-import { 
-  CompositeClip03, 
-  CompositeClip05, 
-  CompositeClip07, 
-  CompositeClip09, 
-  CompositeClip14, 
-  CompositeClip20 
-} from "./CompositeClips";
+import { Composition } from "remotion";
+import { Clip01 } from "./Clip01";
+import { Clip09 } from "./Clip09";
+import { Clip16 } from "./Clip16";
+import { Clip18 } from "./Clip18";
+import { Clip20 } from "./Clip20";
+import { Clip25 } from "./Clip25";
+import { Clip26 } from "./Clip26";
 
 export const RemotionRoot = () => {
   return (
     <>
       <Composition
-        id="clip-01"
-        component={Clip01_2018Slam}
+        id="clip-01-MG"
+        component={Clip01}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-02"
-        component={() => <StillOnly src={staticFile("images/clip-02.png")} />}
+        id="clip-09-MG"
+        component={Clip09}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-03"
-        component={() => <CompositeClip03 bg={staticFile("images/clip-03.png")} />}
+        id="clip-16-MG"
+        component={Clip16}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-04"
-        component={() => <StillOnly src={staticFile("images/clip-04.png")} />}
+        id="clip-18-MG"
+        component={Clip18}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-05"
-        component={() => <CompositeClip05 bg={staticFile("images/clip-05.png")} />}
+        id="clip-20-MG"
+        component={Clip20}
+        durationInFrames={180}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-25-MG"
+        component={Clip25}
         durationInFrames={150}
         fps={60}
         width={1080}
         height={1920}
       />
       <Composition
-        id="clip-06"
-        component={() => <StillOnly src={staticFile("images/clip-06.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-07"
-        component={() => <CompositeClip07 bg={staticFile("images/clip-07.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-08"
-        component={() => <StillOnly src={staticFile("images/clip-08.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-09"
-        component={() => <CompositeClip09 bg={staticFile("images/clip-09.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-10"
-        component={Clip10_UnbreakableMonopoly}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-11"
-        component={() => <StillOnly src={staticFile("images/clip-11.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-12"
-        component={Clip12_RevenueLineBreak}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-13"
-        component={() => <StillOnly src={staticFile("images/clip-13.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-14"
-        component={() => <CompositeClip14 bg={staticFile("images/clip-14.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-15"
-        component={() => <StillOnly src={staticFile("images/clip-15.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-16"
-        component={Clip16_EliminatingCompetition}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-17"
-        component={() => <StillOnly src={staticFile("images/clip-17.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-18"
-        component={() => <StillOnly src={staticFile("images/clip-18.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-19"
-        component={() => <StillOnly src={staticFile("images/clip-19.png")} />}
-        durationInFrames={150}
-        fps={60}
-        width={1080}
-        height={1920}
-      />
-      <Composition
-        id="clip-20"
-        component={() => <CompositeClip20 bg={staticFile("images/clip-20.png")} />}
+        id="clip-26-MG"
+        component={Clip26}
         durationInFrames={180}
         fps={60}
         width={1080}

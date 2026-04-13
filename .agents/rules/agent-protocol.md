@@ -147,18 +147,21 @@ export const MainScene = () => {
 };
 ```
 
-## 6. HIGH-END PROCEDURAL VFX ARCHITECTURE
+## 6. THE CINEMATIC CODE LIBRARY (PERFORMANCE OPTIMIZED)
+You are forbidden from using CPU-heavy CSS filters (like `backdrop-filter` or SVG `<feTurbulence>`) as they crash the renderer. To achieve the Obsidian Vault aesthetic autonomously AND efficiently, you MUST use these hardware-accelerated patterns:
 
-To achieve the "Obsidian Vault" cinematic aesthetic using purely code (no external assets), you MUST use the following technical recipes:
+**1. The "Performant Bloom" Glow Protocol:**
+Do NOT stack more than 2 `textShadow` layers. To get a premium glow without lag, use this exact CSS on text/SVGs:
+`textShadow: "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)"`.
 
-**1. Cinematic Gold Particles (PERFORMANCE CAPPED):**
-Use `@remotion/three` `<ThreeCanvas>`, but you MUST keep it lightweight to prevent render lag. Limit your array to a MAXIMUM of 15-20 `<mesh>` elements. Use simple `<circleGeometry args={[0.05, 8]}>` instead of heavy spheres. Animate gently using `useCurrentFrame()`.
+**2. Hardware-Accelerated Particles (NO BLUR, NO TOP/LEFT):**
+Generating particles with `top`/`left` or `filter: blur` causes severe layout thrashing. You MUST use a maximum of 20 divs, and animate them strictly using `transform: translate()` and `opacity`.
+*Snippet to use:* `new Array(20).fill(0).map((_, i) => <div key={i} style={{ position: 'absolute', width: (i%3)*2+2, height: (i%3)*2+2, backgroundColor: '#C9A84C', borderRadius: '50%', opacity: (i%5)*0.15 + 0.2, transform: \`translate(${ (i*17)%100 }vw, ${ 100 - ((frame * ((i%3)+1)) % 120) }vh)\` }} />)`
 
-**2. Kintsugi Fractures & Sharp Lines (DO NOT USE CSS BORDERS):**
-If a prompt asks for Kintsugi cracks, charts, or sharp lines, you MUST use `<svg>` and `<path>` combined with `@remotion/paths` (`evolvePath`). Add a glowing bloom effect to the SVG using `filter="drop-shadow(0px 0px 8px rgba(201, 168, 76, 0.8))"`. Generate organic, jagged coordinates for the path `d` attribute.
+**3. Continuous Micro-Motion (HARDWARE ACCELERATED):**
+Elements must NEVER stop moving. When text slams into the screen, use `transform: scale()` for continuous drift. Scaling is hardware-accelerated and costs zero render time.
+*Example:* `const continuousScale = interpolate(frame, [0, durationInFrames], [1, 1.05]);` Apply `transform: scale(${entranceSpring * continuousScale})`.
 
-**3. Glowing "Bloom" Typography (OPTIMIZED):**
-Do not over-stack CSS filters as it crashes the render engine. Use a MAXIMUM of two `textShadow` layers to create the glow. Example: `textShadow: "0px 0px 8px rgba(201, 168, 76, 0.8), 0px 2px 4px rgba(0,0,0,0.5)"`.
-
-**4. Smoked Glass & Light Leaks:**
-If a prompt asks for a smoked glass background or cinematic lighting shifts, use `backdropFilter: "blur(24px) brightness(0.5)"` on an `<AbsoluteFill>` with `backgroundColor: "rgba(10, 10, 10, 0.6)"`. For cinematic lighting flares, import `<LightLeak>` from `@remotion/light-leaks` and use a gold hueShift.
+**4. The "Obsidian Vault" Background (NO SVG NOISE):**
+Do NOT use SVG noise or heavy backdrop filters. Achieve the deep, premium smoked glass look using a rich, static radial gradient.
+*Snippet:* `<AbsoluteFill style={{ background: 'radial-gradient(circle at center, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)' }}>`
