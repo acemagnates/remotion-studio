@@ -37,6 +37,18 @@ import { GoldDustParticles } from "./GoldDustParticles";
 import { NotEverythingFade } from "./NotEverythingFade";
 import { StandInLineDrop } from "./StandInLineDrop";
 
+// Ace Magnates Obsidian Batch
+import { Clip01_2018Slam } from "./Clip01_2018Slam";
+import { Clip03_GlassShatter } from "./Clip03_GlassShatter";
+import { Clip05_AssetSecured } from "./Clip05_AssetSecured";
+import { Clip07_ZoningLocked } from "./Clip07_ZoningLocked";
+import { Clip09_CashPop } from "./Clip09_CashPop";
+import { Clip10_UnbreakableMonopoly } from "./Clip10_UnbreakableMonopoly";
+import { Clip12_RevenueLineBreak } from "./Clip12_RevenueLineBreak";
+import { Clip14_400PercentFlash } from "./Clip14_400PercentFlash";
+import { Clip16_EliminatingCompetition } from "./Clip16_EliminatingCompetition";
+import { Clip20_MaintenanceDrop } from "./Clip20_MaintenanceDrop";
+
 
 export const RemotionRoot = () => {
   return (
@@ -204,6 +216,87 @@ export const RemotionRoot = () => {
         height={1920}
       />
 
+
+      <Composition
+        id="clip-01-MG-2018"
+        component={Clip01_2018Slam}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-03-MG-shatter"
+        component={Clip03_GlassShatter}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-05-MG-secured"
+        component={Clip05_AssetSecured}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-07-MG-locked"
+        component={Clip07_ZoningLocked}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-09-MG-cash"
+        component={Clip09_CashPop}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-10-MG-monopoly"
+        component={Clip10_UnbreakableMonopoly}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-12-MG-break"
+        component={Clip12_RevenueLineBreak}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-14-MG-400"
+        component={Clip14_400PercentFlash}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-16-MG-competition"
+        component={Clip16_EliminatingCompetition}
+        durationInFrames={150}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-20-MG-maintenance"
+        component={Clip20_MaintenanceDrop}
+        durationInFrames={180}
+        fps={60}
+        width={1080}
+        height={1920}
+      />
 
       {/* Legacy/Original Clips */}
       <Composition

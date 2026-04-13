@@ -21,8 +21,8 @@ trigger: always_on
 * **Three.js:** Wrap all 3D content in `<ThreeCanvas>`. Never use `@react-three/fiber`'s `useFrame()`.
 * **Transparency Law (React):** If a clip is marked as `TRANSPARENT`, you MUST NOT set a `backgroundColor` on the root `<AbsoluteFill>`. It must remain natively transparent.
 * **Transparency Law (Three.js):** To ensure 3D layers do not render a black background, you MUST pass the alpha prop to the canvas: `<ThreeCanvas alpha={true}>`.
-* **CapCut Render Flags (CRITICAL):** Do not render transparent WebM files. CapCut struggles with them. When the user asks you to render a transparent overlay, you MUST use the ProRes 4444 codec to generate a `.mov` file. Use this exact command:
-  `npx remotion render src/index.ts MainScene out.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le`
+* **Transparent Render Flags (CRITICAL):** You MUST render transparent overlays as WebM files using the VP9 codec to keep file sizes under 5MB. Use this EXACT command:
+  `npx remotion render src/index.ts MainScene out.webm --image-format=png --codec=vp9 --pixel-format=yuva420p`
 
 ## 3. Dependency Management (PRE-EMPTIVE & SAFE)
 To prevent NPM peer dependency conflicts and Windows PowerShell syntax errors, you MUST run terminal commands one at a time and strictly use the `--legacy-peer-deps` flag.
@@ -149,14 +149,14 @@ export const MainScene = () => {
 
 To achieve the "Obsidian Vault" cinematic aesthetic using purely code (no external assets), you MUST use the following technical recipes:
 
-**1. Cinematic Gold Particles / Dust (DO NOT USE CSS DIVS):**
-If a prompt asks for drifting particles, you MUST use `@remotion/three` `<ThreeCanvas>`. Create a 3D scene mapping an array of 50+ `<mesh>` elements with `<sphereGeometry args={[0.05, 8, 8]} />` and `<meshBasicMaterial color="#C9A84C" />`. Animate their `position` and `rotation` in 3D space using `useCurrentFrame()` to create a depth-of-field drifting effect.
+**1. Cinematic Gold Particles (PERFORMANCE CAPPED):**
+Use `@remotion/three` `<ThreeCanvas>`, but you MUST keep it lightweight to prevent render lag. Limit your array to a MAXIMUM of 15-20 `<mesh>` elements. Use simple `<circleGeometry args={[0.05, 8]}>` instead of heavy spheres. Animate gently using `useCurrentFrame()`.
 
 **2. Kintsugi Fractures & Sharp Lines (DO NOT USE CSS BORDERS):**
 If a prompt asks for Kintsugi cracks, charts, or sharp lines, you MUST use `<svg>` and `<path>` combined with `@remotion/paths` (`evolvePath`). Add a glowing bloom effect to the SVG using `filter="drop-shadow(0px 0px 8px rgba(201, 168, 76, 0.8))"`. Generate organic, jagged coordinates for the path `d` attribute.
 
-**3. Glowing "Bloom" Typography:**
-Never use flat colors for text. To create the authoritative, glowing Obsidian Vault text, apply heavily stacked CSS text-shadows to stark white or gold text. Example: `textShadow: "0px 0px 10px rgba(201, 168, 76, 0.6), 0px 0px 20px rgba(201, 168, 76, 0.3), 0px 4px 10px rgba(0,0,0,0.8)"`.
+**3. Glowing "Bloom" Typography (OPTIMIZED):**
+Do not over-stack CSS filters as it crashes the render engine. Use a MAXIMUM of two `textShadow` layers to create the glow. Example: `textShadow: "0px 0px 8px rgba(201, 168, 76, 0.8), 0px 2px 4px rgba(0,0,0,0.5)"`.
 
 **4. Smoked Glass & Light Leaks:**
 If a prompt asks for a smoked glass background or cinematic lighting shifts, use `backdropFilter: "blur(24px) brightness(0.5)"` on an `<AbsoluteFill>` with `backgroundColor: "rgba(10, 10, 10, 0.6)"`. For cinematic lighting flares, import `<LightLeak>` from `@remotion/light-leaks` and use a gold hueShift.
