@@ -28,54 +28,39 @@ jobs:
       - name: Create Output Directory
         run: mkdir -p test-clips
         
-      - name: Render Clip-01-MG (Taco Stand)
-        run: npx remotion render src/index.ts clip-01-MG-taco-stand test-clips/clip-01-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
+      - name: Render Clip-01-MG (2018 Slam)
+        run: npx remotion render src/index.ts clip-01-MG-2018 test-clips/clip-01-MG.mp4
 
-        
-      - name: Render Clip-03-MG (Data Split)
-        run: npx remotion render src/index.ts clip-03-MG-data-split test-clips/clip-03-MG.mp4
+      - name: Render Clip-03-MG (Glass Shatter)
+        run: npx remotion render src/index.ts clip-03-MG-shatter test-clips/clip-03-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
 
-        
-      - name: Render Clip-05-MG (Location Stamp)
-        run: npx remotion render src/index.ts clip-05-MG-location-stamp test-clips/clip-05-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
+      - name: Render Clip-05-MG (Asset Secured)
+        run: npx remotion render src/index.ts clip-05-MG-secured test-clips/clip-05-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
 
-        
-      - name: Render Clip-07-MG (Four Lines)
-        run: npx remotion render src/index.ts clip-07-MG-four-lines test-clips/clip-07-MG.mp4
+      - name: Render Clip-07-MG (Zoning Locked)
+        run: npx remotion render src/index.ts clip-07-MG-locked test-clips/clip-07-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
 
-        
-      - name: Render Clip-11-MG (Thats It)
-        run: npx remotion render src/index.ts clip-11-MG-thats-it test-clips/clip-11-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
+      - name: Render Clip-09-MG (Cash Pop)
+        run: npx remotion render src/index.ts clip-09-MG-cash test-clips/clip-09-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
 
-        
-      - name: Render Clip-13-MG (Flash Montage)
-        run: npx remotion render src/index.ts clip-13-MG-flash-montage test-clips/clip-13-MG.mp4
+      - name: Render Clip-10-MG (Monopoly Slam)
+        run: npx remotion render src/index.ts clip-10-MG-monopoly test-clips/clip-10-MG.mp4
 
-        
-      - name: Render Clip-17-MG (Add More Strike)
-        run: npx remotion render src/index.ts clip-17-MG-add-more-strike test-clips/clip-17-MG.mp4
+      - name: Render Clip-12-MG (Revenue Break)
+        run: npx remotion render src/index.ts clip-12-MG-break test-clips/clip-12-MG.mp4
 
-        
-      - name: Render Clip-19-MG (Gold Leak)
-        run: npx remotion render src/index.ts clip-19-MG-gold-leak test-clips/clip-19-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
+      - name: Render Clip-14-MG (400% Flash)
+        run: npx remotion render src/index.ts clip-14-MG-400 test-clips/clip-14-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
 
-        
-      - name: Render Clip-20-MG (Gold Dust)
-        run: npx remotion render src/index.ts clip-20-MG-gold-dust test-clips/clip-20-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
+      - name: Render Clip-16-MG (Competition)
+        run: npx remotion render src/index.ts clip-16-MG-competition test-clips/clip-16-MG.mp4
 
-        
-      - name: Render Clip-21-MG (Not Everything)
-        run: npx remotion render src/index.ts clip-21-MG-not-everything test-clips/clip-21-MG.mp4
+      - name: Render Clip-20-MG (Maintenance Drop)
+        run: npx remotion render src/index.ts clip-20-MG-maintenance test-clips/clip-20-MG.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
 
-        
-      - name: Render Clip-23-MG (Stand In Line)
-        run: npx remotion render src/index.ts clip-23-MG-stand-in-line test-clips/clip-23-MG.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
-
-        
       - name: Upload Clips Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ace-magnates-clips
+          name: ace-magnates-obsidian-batch
           path: test-clips/
           retention-days: 5
-
