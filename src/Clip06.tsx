@@ -1,92 +1,91 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Easing } from "remotion";
-import { evolvePath } from "@remotion/paths";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
 export const Clip06 = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (0-1.0s)
-  const path1 = "M 200 400 L 880 1520";
-  const path2 = "M 540 960 L 980 960";
-  
-  const { strokeDasharray: sd1, strokeDashoffset: so1 } = evolvePath(
-    interpolate(frame, [0, 60], [0, 1], { extrapolateRight: "clamp", easing: Easing.bezier(0.4, 0, 0.2, 1) }),
-    path1
-  );
-  const { strokeDasharray: sd2, strokeDashoffset: so2 } = evolvePath(
-    interpolate(frame, [36, 80], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
-    path2
-  );
+  // ACT 1: ENTRANCE
+  const cardSpring = spring({ frame, fps, config: { damping: 200 } });
+  const cardY = interpolate(cardSpring, [0, 1], [300, 0]);
+  const cardScale = interpolate(frame, [0, durationInFrames], [1, 1.01]);
 
-  // ACT 2: HOLD + EVOLUTION (1.0-2.5s)
-  const shift = interpolate(frame, [60, 108], [0, 4], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
+  const headerFade = interpolate(frame, [10, 20], [0, 1], { extrapolateRight: "clamp" });
 
-  const goldLightOpacity = interpolate(frame, [60, 108], [0.3, 0.9], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
+  // ACT 2: TYPE-ON
+  const bodyText = "Meetings created by you: 0 of 11";
+  const charIndex = Math.floor(interpolate(frame, [25, 65], [0, bodyText.length], { extrapolateRight: "clamp" }));
+  const cursorBlink = Math.floor(frame / 15) % 2 === 0;
 
-  const textOpacity = interpolate(frame, [72, 96], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
-  const textScale = interpolate(frame, [72, 150], [0.95, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
+  const separatorProgress = interpolate(frame, [60, 75], [0, 1], { extrapolateRight: "clamp" });
+  const attributionFade = interpolate(frame, [70, 85], [0, 1], { extrapolateRight: "clamp" });
 
-  const pulse = interpolate(
-    Math.sin((frame / fps) * (Math.PI / 0.35)), // 0.7s cycle
-    [-1, 1],
-    [0.6, 1]
-  );
+  const borderPulse = interpolate(Math.sin(frame * 0.1), [-1, 1], [0.8, 1]);
 
-  // ACT 3: EXIT (2.5-3.0s)
-  const exit = interpolate(frame, [durationInFrames - 30, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp"
-  });
+  // ACT 3: EXIT
+  const exit = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", opacity: exit }}>
-      {/* Gold Light Bleed */}
-      <AbsoluteFill style={{
-        background: `radial-gradient(circle at 50% 50%, rgba(201, 168, 76, ${goldLightOpacity}) 0%, rgba(0,0,0,0) 70%)`,
-        opacity: goldLightOpacity,
-        mixBlendMode: "screen"
-      }} />
-
-      {/* Panels Shifting */}
-      <AbsoluteFill style={{ transform: `translateX(${-shift}px) translateY(${-shift}px)` }}>
-        {/* Top/Left panel color placeholder */}
-      </AbsoluteFill>
-      <AbsoluteFill style={{ transform: `translateX(${shift}px) translateY(${shift}px)` }}>
-        {/* Bottom/Right panel color placeholder */}
-      </AbsoluteFill>
-
-      {/* Fractures */}
-      <svg width={width} height={height} style={{ position: "absolute", filter: "drop-shadow(0 0 4px rgba(201,168,76,0.6))" }}>
-        <path d={path1} fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeDasharray={sd1} strokeDashoffset={so1} opacity={pulse} />
-        <path d={path2} fill="none" stroke="#C9A84C" strokeWidth="1" strokeDasharray={sd2} strokeDashoffset={so2} opacity={pulse} />
-      </svg>
-
-      {/* Text */}
-      <AbsoluteFill style={{ 
-        justifyContent: "center", 
-        alignItems: "center", 
-        textAlign: "center",
-        fontFamily: "sans-serif",
-        color: "white",
-        fontSize: 32,
-        fontWeight: 900,
-        opacity: textOpacity,
-        transform: `scale(${textScale})`,
-        textShadow: "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)"
+    <AbsoluteFill style={{ opacity: exit }}>
+      <div style={{
+        position: "absolute",
+        bottom: "25%",
+        left: "50%",
+        transform: `translateX(-50%) translateY(${cardY}px) scale(${cardScale})`,
+        width: "80%",
+        height: "18%",
+        backgroundColor: "rgba(10, 10, 10, 0.85)",
+        backdropFilter: "blur(16px)",
+        border: `${borderPulse}px solid #C9A84C`,
+        borderRadius: "4px",
+        padding: "30px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        boxSizing: "border-box"
       }}>
-        GREW BECAUSE <br /> OF IT.
-      </AbsoluteFill>
+        {/* Heading */}
+        <div style={{
+            color: "#C9A84C",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 24,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            opacity: headerFade,
+            letterSpacing: "0.1em"
+        }}>
+            CALENDAR OWNERSHIP AUDIT
+        </div>
+
+        {/* Body */}
+        <div style={{
+            color: "#FFF",
+            fontFamily: "'Courier New', Courier, monospace",
+            fontSize: 42,
+            fontWeight: 400
+        }}>
+            {bodyText.slice(0, charIndex)}
+            {frame >= 25 && frame < 90 && cursorBlink && <span style={{ backgroundColor: "#FFF", marginLeft: 2 }}>&nbsp;</span>}
+        </div>
+
+        {/* Separator */}
+        <div style={{
+            width: `${separatorProgress * 100}%`,
+            height: 1,
+            backgroundColor: "#C9A84C",
+            opacity: 0.5
+        }} />
+
+        {/* Attribution */}
+        <div style={{
+            color: "#C9A84C",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 18,
+            fontStyle: "italic",
+            opacity: attributionFade
+        }}>
+            Week of [current week] · Remote Operations
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

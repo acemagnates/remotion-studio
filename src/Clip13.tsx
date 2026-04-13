@@ -1,61 +1,78 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
-import { evolvePath } from "@remotion/paths";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
+
+const SHARD_COUNT = 14;
+const random = (i: number) => {
+  const x = Math.sin(1337 + i) * 10000;
+  return x - Math.floor(x);
+};
 
 export const Clip13 = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (0-0.7s)
-  const path = `M ${width/2 - 100} ${height/2} L ${width/2 + 100} ${height/2} M ${width/2} ${height/2 - 50} L ${width/2} ${height/2 + 50}`;
-  const { strokeDasharray, strokeDashoffset } = evolvePath(
-    interpolate(frame, [0, 36], [0, 1], { extrapolateRight: "clamp" }),
-    path
-  );
+  // Shard trajectories
+  const burst = interpolate(frame, [0, 24], [0, 1], {
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.expo)
+  });
 
-  const shift = interpolate(frame, [0, 36], [0, 3], { extrapolateRight: "clamp" });
+  const textSpring = spring({ frame, fps, delay: 15, config: { damping: 200 } });
+  const textScale = interpolate(frame, [0, durationInFrames], [1, 1.06]);
 
-  // ACT 2: HOLD + EVOLUTION (0.7-2.0s)
-  const nameOpacity = interpolate(frame, [42, 60], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const separatorWidth = interpolate(frame, [60, 84], [0, 300], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const handleOpacity = interpolate(frame, [72, 90], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const taglineOpacity = interpolate(frame, [90, 108], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const bloomGlow = "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)";
+  const edgePulse = interpolate(Math.sin(frame * 0.1), [-1, 1], [0.8, 1]);
 
-  const scale = interpolate(frame, [42, 120], [1, 1.05], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
+  // ACT 3: EXIT
+  const exit = interpolate(frame, [durationInFrames - 9, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
+
+  const shards = new Array(SHARD_COUNT).fill(0).map((_, i) => {
+    const angle = (i / SHARD_COUNT) * Math.PI * 2 + random(i) * 0.5;
+    const distance = 400 * ((i % 3) + 1) * burst + (frame > 24 ? (frame - 24) * 1 : 0);
+    const rotation = random(i * 2) * 360 + frame * (random(i * 3) - 0.5) * 2;
+    const size = width * (0.03 + random(i * 4) * 0.05);
+
+    return (
+      <div key={i} style={{
+        position: "absolute",
+        left: width/2 + Math.cos(angle) * distance,
+        top: height/2 + Math.sin(angle) * distance,
+        width: size,
+        height: size,
+        backgroundColor: "#0A0A0A",
+        border: `1px solid rgba(201,168,76, ${edgePulse})`,
+        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+        clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)" // irregular shard shape
+      }} />
+    );
   });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", fontFamily: "sans-serif", color: "white" }}>
-      {/* Fracture */}
-      <svg width={width} height={height} style={{ position: "absolute", filter: "drop-shadow(0 0 4px rgba(201,168,76,0.6))" }}>
-        <path d={path} fill="none" stroke="#C9A84C" strokeWidth="2" strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} />
-      </svg>
-
-      <AbsoluteFill style={{ 
-        justifyContent: "center", 
-        alignItems: "center", 
-        textAlign: "center",
-        transform: `scale(${scale})`
-      }}>
-        <div style={{ transform: `translateY(${-shift}px)`, opacity: nameOpacity }}>
-          <div style={{ fontSize: 36, fontWeight: 900, textShadow: "0 0 12px rgba(201,168,76,0.5)" }}>ACE MAGNATES</div>
-        </div>
-
-        {/* Separator */}
-        <div style={{ 
-          width: separatorWidth, 
-          height: 1, 
-          backgroundColor: "#C9A84C", 
-          margin: "15px 0",
-          opacity: nameOpacity
-        }} />
-
-        <div style={{ transform: `translateY(${shift}px)` }}>
-          <div style={{ color: "#C9A84C", fontSize: 16, letterSpacing: "0.2em", opacity: handleOpacity }}>@acemagnates</div>
-          <div style={{ fontSize: 12, marginTop: 10, opacity: taglineOpacity, letterSpacing: "0.1em" }}>MORE STORIES THEY DON'T TEACH</div>
-        </div>
+    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", opacity: exit }}>
+      {/* Revealed Text */}
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", transform: `scale(${textScale})`, opacity: textSpring }}>
+            <div style={{
+                color: "#FFF",
+                fontFamily: "Inter, sans-serif",
+                fontSize: 100,
+                fontWeight: 900,
+                textAlign: "center"
+            }}>
+                PRODUCTIVITY
+            </div>
+            <div style={{
+                color: "#C9A84C",
+                fontFamily: "Inter, sans-serif",
+                fontSize: 100,
+                fontWeight: 900,
+                textAlign: "center",
+                textShadow: bloomGlow
+            }}>
+                PROBLEM?
+            </div>
       </AbsoluteFill>
+
+      {/* Shards */}
+      {shards}
     </AbsoluteFill>
   );
 };

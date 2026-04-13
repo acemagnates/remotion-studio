@@ -2,85 +2,88 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Eas
 
 export const Clip09 = () => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (0-0.6s)
-  const entranceSpring = spring({
-    frame,
-    fps,
-    config: { damping: 200 }
-  });
-  const entranceScale = interpolate(entranceSpring, [0, 1], [0.8, 1]);
-  const entranceOpacity = interpolate(frame, [0, 18], [0, 1], { extrapolateRight: "clamp" });
-
-  // ACT 2: HOLD + MORPH (0.6-2.8s)
-  // Morph starts at 1.2s (72 frames)
-  // Phase 1: Blur out (72-96)
-  // Phase 2: Blur in (96-120)
+  // ACT 1: ENTRANCE
+  const enterSpring = spring({ frame, fps, config: { damping: 200 } });
   
-  const blurProgress = interpolate(frame, [72, 96, 120], [0, 1, 0], {
+  // Transition Phase (Word A -> Word B)
+  // 0s - 0.8s: Hold A
+  // 0.8s - 1.5s: Morph
+  // 1.5s - 3.0s: Hold B (Lock at 2.0s)
+  // 3.0s - 3.5s: Exit
+  
+  const morphProgress = interpolate(frame, [24, 45], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.inOut(Easing.quad)
   });
-  const blurAmount = blurProgress * 12;
 
-  const opacity1 = interpolate(frame, [84, 96], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
-  const opacity2 = interpolate(frame, [96, 108], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
+  const blurIntensity = interpolate(frame, [24, 35, 45], [0, 25, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  
+  // Word A (YES)
+  const aOpacity = interpolate(morphProgress, [0, 0.4], [1, 0]);
+  const aScale = interpolate(morphProgress, [0, 1], [1, 1.15]);
+  
+  // Word B (NO)
+  const bLockSpring = spring({ frame, fps, delay: 60, config: { damping: 12, stiffness: 200 } });
+  const bOpacity = interpolate(morphProgress, [0.6, 1], [0, 1]);
+  const bScale = interpolate(morphProgress, [0.6, 1], [1.3, 1]) * interpolate(frame, [0, durationInFrames], [1, 1.05]);
 
-  const engineBounce = spring({
-    frame: frame - 120,
-    fps,
-    config: { damping: 12, stiffness: 200 }
-  });
-  const engineScale = interpolate(engineBounce, [0, 1], [0.8, 1]);
+  const bloomGlow = frame >= 60 ? "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)" : "none";
 
-  const goldBloom = interpolate(frame, [120, 150], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
-  });
-
-  // ACT 3: EXIT (2.8-3.5s)
-  const finalScale = interpolate(frame, [168, 210], [1, 1.1], {
-    extrapolateLeft: "clamp"
-  });
-  const exitOpacity = interpolate(frame, [168, 210], [1, 0], {
-    extrapolateLeft: "clamp"
-  });
+  // ACT 3: EXIT
+  const exit = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
 
   return (
-    <AbsoluteFill style={{ 
-      backgroundColor: "#0A0A0A", 
-      fontFamily: "sans-serif",
-      justifyContent: "center",
-      alignItems: "center",
-      color: "white"
-    }}>
+    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", opacity: exit }}>
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", filter: `blur(${blurIntensity}px)` }}>
+        {/* Word YES */}
+        <div style={{
+            position: "absolute",
+            color: "#FFF",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 480,
+            fontWeight: 900,
+            opacity: aOpacity * enterSpring,
+            transform: `scale(${aScale})`
+        }}>
+            YES
+        </div>
+
+        {/* Word NO */}
+        <div style={{
+            position: "absolute",
+            color: "#FFF",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 480,
+            fontWeight: 900,
+            opacity: bOpacity,
+            transform: `scale(${bScale})`,
+            textShadow: bloomGlow
+        }}>
+            NO
+        </div>
+      </AbsoluteFill>
+
+      {/* Subtext */}
       <div style={{
-        fontSize: 52,
-        fontWeight: 900,
+        position: "absolute",
+        top: "70%",
+        width: "100%",
         textAlign: "center",
-        filter: `blur(${blurAmount}px)`,
-        opacity: exitOpacity,
-        transform: `scale(${finalScale * (frame < 96 ? entranceScale : engineScale)})`
+        color: "#C9A84C",
+        fontFamily: "Inter, sans-serif",
+        fontSize: 42,
+        fontWeight: 400,
+        letterSpacing: "0.4em"
       }}>
-        {frame < 96 ? (
-          <div style={{ opacity: opacity1 }}>HIS ENEMY</div>
-        ) : (
-          <div style={{ 
-            color: "#C9A84C", 
-            opacity: opacity2,
-            textShadow: `0 0 ${12 * goldBloom}px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)`
-          }}>
-            THE ENGINE
-          </div>
-        )}
+        <div style={{ position: "absolute", width: "100%", opacity: 1 - morphProgress }}>
+            DEFAULT ANSWER.
+        </div>
+        <div style={{ position: "absolute", width: "100%", opacity: morphProgress }}>
+            DELIBERATE CHOICE.
+        </div>
       </div>
     </AbsoluteFill>
   );

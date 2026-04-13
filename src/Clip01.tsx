@@ -1,172 +1,172 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
-import { ThreeCanvas } from "@remotion/three";
-import { useMemo } from "react";
-import * as THREE from "three";
-
-const ParticleBurst = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  
-  const particleCount = 18;
-  const burstFrame = 0.8 * fps;
-  
-  const particles = useMemo(() => {
-    return new Array(particleCount).fill(0).map((_, i) => {
-      const angle = (i / particleCount) * Math.PI * 2;
-      const speed = 0.5 + Math.random() * 2;
-      return { angle, speed, size: 2 + Math.random() * 3 };
-    });
-  }, []);
-
-  if (frame < burstFrame) return null;
-
-  const progress = (frame - burstFrame) / (0.8 * fps);
-  if (progress > 1) return null;
-
-  const opacity = interpolate(progress, [0, 1], [1, 0], { extrapolateRight: "clamp" });
-
-  return (
-    <group>
-      {particles.map((p, i) => {
-        const distance = p.speed * (frame - burstFrame) * 2;
-        const x = Math.cos(p.angle) * distance;
-        const y = Math.sin(p.angle) * distance;
-        return (
-          <mesh key={i} position={[x, y, 0]}>
-            <circleGeometry args={[p.size, 16]} />
-            <meshBasicMaterial color="#C9A84C" transparent opacity={opacity} />
-          </mesh>
-        );
-      })}
-    </group>
-  );
-};
-
-const Digit = ({ value, delay }: { value: string; delay: number }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  
-  const entrance = spring({
-    frame: frame - delay,
-    fps,
-    config: { damping: 12, stiffness: 200 }
-  });
-
-  const y = interpolate(entrance, [0, 1], [200, 0]);
-  
-  // Counter roll 0 -> value
-  // The value is a digit 0-9 or 'K' or '$'
-  // But description says: "morphing through 0→9→0 in a mechanical counter-roll"
-  // For simplicity, I'll animate the scroll position
-  
-  const scroll = interpolate(frame, [0, 0.7 * fps], [0, 1], {
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.quad)
-  });
-
-  return (
-    <div style={{
-      display: "inline-block",
-      transform: `translateY(${y}px)`,
-      opacity: entrance,
-      margin: "0 4px"
-    }}>
-      {value}
-    </div>
-  );
-};
+import { evolvePath } from "@remotion/paths";
 
 export const Clip01 = () => {
   const frame = useCurrentFrame();
-  const { fps, width, height, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (0-0.7s)
-  const dollarSlam = spring({
-    frame: frame - 6, // 0.1s
-    fps,
-    config: { damping: 12, stiffness: 200 }
+  // ACT 1: ENTRANCE
+  const entranceSpring = spring({ frame, fps, config: { damping: 12, stiffness: 200 } });
+  const labelFade = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+  
+  // Gold line path
+  const linePath = `M 0 ${height / 2} L ${width} ${height / 2}`;
+  const lineProgress = interpolate(frame, [0, 24], [0, 1], { 
+    extrapolateLeft: "clamp", 
+    extrapolateRight: "clamp",
+    easing: Easing.bezier(0.4, 0, 0.2, 1)
   });
-  const dollarX = interpolate(dollarSlam, [0, 1], [-200, 0]);
+  const { strokeDasharray, strokeDashoffset } = evolvePath(lineProgress, linePath);
 
-  const lineDraw = interpolate(frame, [0, 30], [0, 700], {
-    extrapolateRight: "clamp"
-  });
-
-  // ACT 2: HOLD + EVOLUTION (0.7-2.0s)
-  const driftScale = interpolate(frame, [0.7 * fps, 2 * fps], [1, 1.07], {
+  // ACT 2: COUNTER ROLL (47 -> 21)
+  // Logic: Split 47 into 4 and 7, 21 into 2 and 1.
+  // Or just roll the whole number if it's easier, but "digit strips" was requested.
+  const rollProgress = interpolate(frame, [24, 75], [0, 1], {
     extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.expo)
   });
 
-  const heQuitOpacity = interpolate(frame, [60, 84], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp"
+  const getDigitRoll = (startDigit: number, endDigit: number, progress: number) => {
+    const totalDigits = 10;
+    // We want to scroll through a strip. 
+    // If we go from 4 to 2, we might pass 3.
+    // However, a roll usually goes through many numbers.
+    const distance = (startDigit >= endDigit) ? (startDigit - endDigit) : (startDigit + 10 - endDigit);
+    // Let's just do a simple vertical offset for the strip
+    return progress * distance;
+  };
+
+  // ACT 3: EXIT
+  const exit = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
+
+  // Numbers
+  const renderDigitStrip = (start: number, end: number, progress: number) => {
+    const digits = [];
+    // For a 4 -> 2 roll, we show 4, 3, 2
+    // If it's a "scrolling strip", we can just show a vertical stack
+    const count = 5; // how many digits to show in the strip
+    for (let i = 0; i < count; i++) {
+        const val = (start - i + 10) % 10;
+        digits.push(val);
+    }
+    
+    const yOffset = interpolate(progress, [0, 1], [0, (start - end + (start < end ? 10 : 0)) * 200]);
+
+    return (
+      <div style={{ 
+        position: "relative", 
+        height: 200, 
+        overflow: "hidden", 
+        width: 120,
+        display: "flex",
+        justifyContent: "center"
+      }}>
+        <div style={{ 
+            transform: `translateY(${-yOffset}px)`,
+            display: "flex",
+            flexDirection: "column"
+        }}>
+            {Array.from({length: 11}).map((_, i) => (
+                <div key={i} style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {(start - i + 100) % 10}
+                </div>
+            ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Simplified Counter implementation as requested: "slicing a vertically scrolling number strip"
+  const counterVal = interpolate(rollProgress, [0, 1], [47, 21]);
+  const displayVal = Math.floor(counterVal);
+
+  // Particles on lock
+  const isLocked = frame >= 75;
+  const particles = new Array(12).fill(0).map((_, i) => {
+    const angle = (i / 12) * Math.PI * 2;
+    const pDist = interpolate(frame, [75, 90], [0, 150 * ((i % 3) + 1)], { extrapolateLeft: "clamp" });
+    const pOp = interpolate(frame, [75, 90], [0.8, 0], { extrapolateLeft: "clamp" });
+    return (
+      <div key={i} style={{
+        position: "absolute",
+        width: (i % 3) + 3,
+        height: (i % 3) + 3,
+        backgroundColor: "#C9A84C",
+        borderRadius: "50%",
+        opacity: pOp * exit,
+        transform: `translate(${Math.cos(angle) * pDist + width/2}px, ${Math.sin(angle) * pDist + height/2 - 100}px)`
+      }} />
+    );
   });
 
-  const linePulse = interpolate(
-    Math.sin((frame / fps) * (Math.PI / 0.4)), // 0.8s cycle
-    [-1, 1],
-    [0.7, 1]
-  );
-
-  // ACT 3: EXIT (2.0-2.5s)
-  const exit = interpolate(frame, [durationInFrames - 30, durationInFrames], [1, 0], {
-    extrapolateLeft: "clamp"
-  });
+  const bloomGlow = isLocked ? "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)" : "none";
 
   return (
-    <AbsoluteFill style={{ 
-      backgroundColor: "#0A0A0A", 
-      opacity: exit,
-      fontFamily: "sans-serif",
-      color: "#FFFFFF",
-      overflow: "hidden"
-    }}>
-      {/* Background Texture Placeholder */}
-      <AbsoluteFill style={{ 
-        background: "radial-gradient(circle at 50% 45%, rgba(30,25,15,0.4) 0%, rgba(5,5,5,0.4) 60%, rgba(0,0,0,0) 100%)",
-        backdropFilter: "blur(4px)" // Note: Protocol says BANNED but description asks for it. 
-        // I will follow Protocol: "BANNED: backdrop-filter". I'll use a grain overlay instead if needed, or just skip.
-      }} />
+    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", opacity: exit }}>
+      {/* Particles */}
+      {particles}
 
-      {/* Main Content */}
-      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", transform: `scale(${driftScale})` }}>
-        <div style={{ display: "flex", alignItems: "baseline", fontSize: width * 0.25, fontWeight: 900 }}>
-          <div style={{ transform: `translateX(${dollarX}px)`, opacity: dollarSlam }}>$</div>
-          <div style={{ display: "flex" }}>
-            {"90K".split("").map((char, i) => (
-              <Digit key={i} value={char} delay={i * 5} />
-            ))}
-          </div>
-        </div>
-        
-        {/* Underline */}
+      {/* Main Number */}
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", top: "-10%" }}>
         <div style={{ 
-          width: lineDraw, 
-          height: 1, 
-          backgroundColor: "#C9A84C", 
-          marginTop: 20, 
-          opacity: linePulse 
-        }} />
-
-        {/* HE QUIT. */}
-        <div style={{ 
-          position: "absolute", 
-          bottom: "25%", 
-          color: "#C9A84C", 
-          fontSize: 28, 
-          letterSpacing: "0.2em",
-          fontWeight: 700,
-          opacity: heQuitOpacity
+            fontSize: 480, 
+            fontFamily: "Inter, sans-serif", 
+            fontWeight: 900, 
+            color: "#FFF",
+            transform: `scale(${interpolate(entranceSpring, [0, 1], [1.2, 1]) * interpolate(frame, [0, durationInFrames], [1, 1.04])})`,
+            textShadow: bloomGlow,
+            display: "flex"
         }}>
-          HE QUIT.
+            {/* Split roll for 47 -> 21 */}
+            <div style={{ position: "relative", height: 500, overflow: "hidden" }}>
+                 <div style={{ transform: `translateY(${-interpolate(rollProgress, [0, 1], [0, 400], { easing: Easing.out(Easing.expo)}) }px)` }}>
+                    <div style={{ height: 500 }}>4</div>
+                    <div style={{ height: 500 }}>3</div>
+                    <div style={{ height: 500 }}>2</div>
+                 </div>
+            </div>
+            <div style={{ position: "relative", height: 500, overflow: "hidden" }}>
+                 <div style={{ transform: `translateY(${-interpolate(rollProgress, [0, 1], [0, 1200], { easing: Easing.out(Easing.expo)}) }px)` }}>
+                    <div style={{ height: 500 }}>7</div>
+                    <div style={{ height: 500 }}>6</div>
+                    <div style={{ height: 500 }}>5</div>
+                    <div style={{ height: 500 }}>4</div>
+                    <div style={{ height: 500 }}>3</div>
+                    <div style={{ height: 500 }}>2</div>
+                    <div style={{ height: 500 }}>1</div>
+                 </div>
+            </div>
         </div>
       </AbsoluteFill>
 
-      {/* Particle Burst */}
-      <ThreeCanvas width={width} height={height} style={{ pointerEvents: "none" }}>
-        <ParticleBurst />
-      </ThreeCanvas>
+      {/* Divider line */}
+      <svg width={width} height={height} style={{ position: "absolute" }}>
+        <path 
+            d={linePath} 
+            stroke="#C9A84C" 
+            strokeWidth="1" 
+            fill="none" 
+            strokeDasharray={strokeDasharray}
+            strokeDashoffset={strokeDashoffset}
+        />
+      </svg>
+
+      {/* Label */}
+      <div style={{
+        position: "absolute",
+        top: "55%",
+        width: "100%",
+        textAlign: "center",
+        color: "#C9A84C",
+        fontFamily: "Inter, sans-serif",
+        fontSize: 42,
+        fontWeight: 400,
+        letterSpacing: "0.4em",
+        opacity: labelFade
+      }}>
+        MEETINGS DELETED
+      </div>
     </AbsoluteFill>
   );
 };
