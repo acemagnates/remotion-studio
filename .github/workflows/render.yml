@@ -28,12 +28,18 @@ jobs:
       - name: Create Output Directory
         run: mkdir -p renders/master-batch
         
-      - name: Render Clip 01-20
+      - name: Render Solid Clips
         run: |
-          for i in {01..20}; do
-            id="clip-$i"
+          for id in clip-01-MG clip-09-MG clip-16-MG clip-25-MG clip-26-MG; do
             echo "Rendering $id..."
             npx remotion render src/index.ts $id renders/master-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuv420p
+          done
+
+      - name: Render Transparent Clips
+        run: |
+          for id in clip-18-MG clip-20-MG; do
+            echo "Rendering transparent $id..."
+            npx remotion render src/index.ts $id renders/master-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
           done
 
       - name: Upload Clips Artifact
