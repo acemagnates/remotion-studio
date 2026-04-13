@@ -14,11 +14,11 @@ trigger: always_on
 * **Default:** 9:16 vertical (1080×1920) at 60fps. Adapt only if user specifies otherwise.
 * **Animations:** ALL driven by `useCurrentFrame()`. NO CSS Keyframes, NO Framer Motion.
 * **Assets:** Do NOT use `staticFile()` unless user provides the file. Placeholders: `https://remotion.media/video.mp4` / `https://remotion.media/audio.mp3`
-* **Three.js (CRITICAL):** You MUST pass `width` and `height` props to `<ThreeCanvas width={width} height={height}>` (get them from `useVideoConfig()`). Never use `useFrame()`.
-* **Transparency (React):** TRANSPARENT clips = NO `backgroundColor` on root `<AbsoluteFill>`.
+* **Three.js (CRITICAL):** You MUST pass `width` and `height` props to `<ThreeCanvas width={width} height={height}>` (get them from `useVideoConfig()`). Never use `useFrame()`. If a recipe does not require 3D, do NOT import ThreeJS to save bundle size.
+* **Transparency (React) (CRITICAL):** If a clip is TRANSPARENT, you MUST NOT render any background. Remove the Obsidian Vault radial-gradient `<AbsoluteFill>` completely. If you leave the background in, the clip will render solid and ruin the overlay.
 * **Transparency (Three.js):** Pass `<ThreeCanvas alpha={true} width={width} height={height}>`.
-* **Render Command (CRITICAL):** `npx remotion render src/index.ts MainScene out.webm --image-format=png --codec=vp9 --pixel-format=yuva420p`
-* **Min Duration:** `durationInFrames` ≥ **150** (2.5s at 60fps). Round UP if shorter.
+* **Render Command (CRITICAL):** `npx remotion render src/index.ts MainScene out.webm --codec=vp9 --pixel-format=yuva420p`
+* **Min Duration:** `durationInFrames` ≥ **150** (2.5s at 60fps, or 75 frames at 30fps). Round UP if shorter.
 
 ## 3. Dependencies
 Run commands ONE AT A TIME in PowerShell. No `&&` chaining. ALWAYS use `--legacy-peer-deps`.
@@ -88,7 +88,7 @@ BANNED: `backdrop-filter`, SVG `<feTurbulence>`, `filter: blur`, `top`/`left` an
 
 **3. Continuous Micro-Motion:** Elements NEVER stop. `const scale = interpolate(frame, [0, durationInFrames], [1, 1.08]);` Apply via `transform: scale()`.
 
-**4. Obsidian Vault BG:** `radial-gradient(circle at 50% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)`
+**4. Obsidian Vault BG:** `radial-gradient(circle at 50% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)`. (CRITICAL: Do NOT use this if the clip is requested as TRANSPARENT).
 
 **5. Counter Roll:** `Math.floor(interpolate(frame, [0, 1.5*fps], [0, targetNum], { extrapolateRight:"clamp", easing: Easing.out(Easing.quad) }))` → format with `.toLocaleString()`.
 

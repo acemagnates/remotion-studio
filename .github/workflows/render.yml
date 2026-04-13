@@ -30,14 +30,14 @@ jobs:
         
       - name: Render Solid Clips
         run: |
-          for id in CounterRoll SplitReveal ShatterBurst DataTheater GlitchInterference KintsugiReveal; do
+          for id in clip-01-MG clip-03-MG clip-05-MG clip-06-MG clip-07-MG clip-08-MG clip-09-MG clip-13-MG; do
             echo "Rendering $id..."
             npx remotion render src/index.ts $id renders/recipe-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuv420p
           done
 
       - name: Render Transparent Clips
         run: |
-          for id in LowerThird EvidenceCard TerminalType ParticleDrift; do
+          for id in clip-02-MG clip-04-MG clip-10-MG clip-11-MG clip-12-MG; do
             echo "Rendering transparent $id..."
             npx remotion render src/index.ts $id renders/recipe-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
           done
