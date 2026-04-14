@@ -1,97 +1,65 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Easing } from "remotion";
-import { ThreeCanvas } from "@remotion/three";
-import * as THREE from "three";
-import { useMemo } from "react";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
-const BurstParticles = ({ frame }: { frame: number }) => {
-  const { fps } = useVideoConfig();
-  const particleCount = 40;
-  
-  const particles = useMemo(() => {
-    const data = [];
-    for (let i = 0; i < particleCount; i++) {
-        const theta = Math.random() * 2 * Math.PI;
-        const phi = Math.acos(2 * Math.random() - 1);
-        const velocity = 0.5 + Math.random() * 1.5;
-        const x = Math.sin(phi) * Math.cos(theta) * velocity;
-        const y = Math.sin(phi) * Math.sin(theta) * velocity;
-        const z = Math.cos(phi) * velocity;
-      data.push({ x, y, z, size: Math.random() * 0.05 + 0.02 });
-    }
-    return data;
-  }, []);
-
-  const burstFrame = 15; // When the number hits 28
-  const burstProgress = Math.max(0, frame - burstFrame);
-  const burstSpring = spring({ frame: burstProgress, fps, config: { damping: 20, stiffness: 100 } });
-
-  return (
-    <group>
-      {particles.map((p, i) => {
-        const drift = burstProgress * 0.01;
-        const opacity = interpolate(burstProgress, [0, 60], [1, 0], { extrapolateRight: "clamp" });
-        
-        return (
-          <mesh key={i} position={[p.x * burstSpring * 10, p.y * burstSpring * 10, p.z * burstSpring * 10 + drift]}>
-            <sphereGeometry args={[p.size, 8, 8]} />
-            <meshBasicMaterial color="#C9A84C" transparent opacity={opacity} />
-          </mesh>
-        );
-      })}
-    </group>
-  );
-};
-
-export const Clip01 = () => {
+export const Clip01: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames, width, height } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (Counter Scroll)
-  const entrance = interpolate(frame, [0, 15], [0, 28], {
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.quad),
+  // ACT 1: ENTRANCE (Slam from Z-axis)
+  const entrance = spring({
+    frame,
+    fps,
+    config: {
+      damping: 15,
+      stiffness: 80,
+      mass: 2,
+    },
   });
-  
-  const blur = interpolate(frame, [0, 7, 15], [20, 10, 0], { extrapolateRight: "clamp" });
-  
-  // ACT 2: HOLD + EVOLUTION
-  const lockSpring = spring({ frame: frame - 15, fps, config: { damping: 12, stiffness: 200 } });
-  const scale = interpolate(frame, [0, durationInFrames], [1, 1.05]);
-  
-  // ACT 3: EXIT
-  const exit = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
 
-  const currentNumber = Math.floor(entrance);
+  const scaleEntrance = interpolate(entrance, [0, 1], [3, 1]);
+
+  // ACT 2: HOLD + EVOLUTION
+  const slowScale = interpolate(frame, [0, durationInFrames], [1, 1.05]);
+  const shadowOpacity = interpolate(
+    Math.sin(frame * 0.1),
+    [-1, 1],
+    [0.8, 1.0]
+  );
+
+  // ACT 3: EXIT
+  const exitStart = durationInFrames - 15;
+  const exit = interpolate(frame, [exitStart, durationInFrames], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const blurX = interpolate(frame, [exitStart, durationInFrames], [0, 100], {
+    extrapolateLeft: "clamp",
+  });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", opacity: exit }}>
-      {/* Background ThreeJS Burst */}
-      <ThreeCanvas width={width} height={height} style={{ position: "absolute" }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <BurstParticles frame={frame} />
-      </ThreeCanvas>
-
-      {/* Vignette */}
-      <AbsoluteFill style={{
-        background: "radial-gradient(circle, transparent 30%, rgba(0,0,0,1) 100%)",
-        pointerEvents: "none"
-      }} />
-
-      {/* Number Display */}
-      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-        <div style={{
-          fontFamily: "sans-serif",
-          fontSize: 320,
+    <AbsoluteFill style={{ 
+      justifyContent: "center", 
+      alignItems: "center",
+      opacity: exit,
+    }}>
+      <h1
+        style={{
+          fontFamily: "Arial, sans-serif",
+          fontSize: 160,
+          color: "#FFFFFF",
           fontWeight: 900,
-          color: "#FFF",
-          filter: `blur(${blur}px)`,
-          transform: `scale(${interpolate(lockSpring, [0, 1], [0.8, 1]) * scale})`,
-          textShadow: "0 0 40px rgba(201,168,76,0.3)"
-        }}>
-          {currentNumber}
-        </div>
-      </AbsoluteFill>
+          margin: 0,
+          textAlign: "center",
+          transform: `scale(${scaleEntrance * slowScale})`,
+          textShadow: `
+            0 0 12px rgba(201, 168, 76, ${shadowOpacity}),
+            0 4px 20px rgba(0, 0, 0, 0.8)
+          `,
+          filter: `blur(${blurX}px)`,
+          WebkitTextStroke: "1px #C9A84C",
+        }}
+      >
+        MILLIONS
+      </h1>
     </AbsoluteFill>
   );
 };

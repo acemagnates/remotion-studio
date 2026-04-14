@@ -1,87 +1,85 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Easing } from "remotion";
-import React from "react";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
-export const Clip03 = () => {
+export const Clip03: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (Counter Scroll)
-  const vaultSlam = spring({
+  // ACT 1: ENTRANCE (Slide up)
+  const entrance = spring({
     frame,
     fps,
-    config: { damping: 15, stiffness: 80, mass: 2 },
+    config: {
+      damping: 20,
+      stiffness: 200,
+    },
   });
-  
-  const rawCounter = interpolate(vaultSlam, [0, 1], [1, 14]);
-  const currentNumber = Math.floor(rawCounter);
-  
-  // ACT 2: HOLD + EVOLUTION
-  const glow = interpolate(Math.sin(frame * 0.2), [-1, 1], [0.8, 1.2]);
-  const scanlinePos = (frame * 2.5) % 100;
-  
-  // Word typing
-  const word = "CONSECUTIVE";
-  const typeProgress = interpolate(frame, [15, 45], [0, word.length], { extrapolateRight: "clamp" });
-  const typedWord = word.substring(0, Math.floor(typeProgress));
-  
-  // ACT 3: EXIT (Split horizontally)
-  const exit = spring({ frame: frame - (durationInFrames - 15), fps, config: { damping: 10, stiffness: 200 } });
-  const splitOffset = interpolate(exit, [0, 1], [0, 600]);
+
+  const translateY = interpolate(entrance, [0, 1], [400, 0]);
+
+  // ACT 2: HOLD + EVOLUTION (Shimmer)
+  const shimmerPos = interpolate(
+    frame % 60,
+    [0, 60],
+    [-100, 200]
+  );
+
+  // ACT 3: EXIT (Slide down)
+  const exitStart = durationInFrames - 15;
+  const exitSpring = spring({
+    frame: frame - exitStart,
+    fps,
+    config: {
+      damping: 20,
+      stiffness: 200,
+    },
+  });
+  const exitTranslateY = interpolate(exitSpring, [0, 1], [0, 400]);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0A0A0A" }}>
-      {/* Scan lines */}
-      <AbsoluteFill style={{ overflow: "hidden", pointerEvents: "none", opacity: 0.1 }}>
-        <div style={{
-          position: "absolute",
-          top: `${scanlinePos}%`,
-          width: "100%",
-          height: "2px",
-          backgroundColor: "#FFF",
-          boxShadow: "0 0 10px #FFF"
-        }} />
-        <div style={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          background: "repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(201,168,76,0.1) 5px)"
-        }} />
-      </AbsoluteFill>
-
-      {/* Main Content */}
-      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
-        {/* Number 14 */}
-        <div style={{
+    <AbsoluteFill style={{ 
+      justifyContent: "flex-end", 
+      alignItems: "center",
+      paddingBottom: 200,
+      opacity: interpolate(frame, [0, 10, durationInFrames - 10, durationInFrames], [0, 1, 1, 0]),
+    }}>
+      <div
+        style={{
+          width: 600,
+          height: 150,
+          backgroundColor: "#0A0A0A",
+          border: "1px solid #C9A84C",
           display: "flex",
-          transform: `scale(${1 + (glow - 1) * 0.05})`,
-          opacity: 1 - exit
-        }}>
-          <div style={{
-            fontFamily: "sans-serif",
-            fontSize: 360,
-            fontWeight: 900,
-            color: "#C9A84C",
-            textShadow: `0 0 ${20 * glow}px rgba(201,168,76,0.6)`,
-            transform: `translateX(-${splitOffset}px)`
-          }}>
-            {currentNumber}
-          </div>
-        </div>
-
-        {/* Word CONSECUTIVE */}
+          justifyContent: "center",
+          alignItems: "center",
+          position: "relative",
+          overflow: "hidden",
+          transform: `translateY(${translateY + exitTranslateY}px)`,
+          // backdropFilter is BANNED as per protocol, using semi-transparent bg instead
+          background: "rgba(10, 10, 10, 0.9)", 
+        }}
+      >
+        {/* Shimmer Effect */}
         <div style={{
-          fontFamily: "monospace",
-          fontSize: 48,
-          color: "#FFF",
-          letterSpacing: "0.2em",
-          marginTop: -20,
-          opacity: 1 - exit,
-          transform: `translateX(${splitOffset}px)`
+          position: "absolute",
+          top: 0,
+          left: `${shimmerPos}%`,
+          width: "20%",
+          height: "100%",
+          background: "linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.4), transparent)",
+          transform: "skewX(-20deg)",
+        }} />
+
+        <h2 style={{
+          fontFamily: "Arial, sans-serif",
+          fontSize: 80,
+          color: "#FFFFFF",
+          fontWeight: 900,
+          margin: 0,
+          letterSpacing: "0.1em",
         }}>
-          {typedWord}
-          <span style={{ opacity: (frame % 10 < 5) ? 1 : 0 }}>_</span>
-        </div>
-      </AbsoluteFill>
+          RANKED
+        </h2>
+      </div>
     </AbsoluteFill>
   );
 };

@@ -26,7 +26,7 @@ Run commands ONE AT A TIME in PowerShell. No `&&` chaining. ALWAYS use `--legacy
 * Version mismatch? Run `npx remotion upgrade --legacy-peer-deps`.
 
 ## 4. Execution Pipeline
-**Phase 1 — Code:** Clean slate first. Overwrite `src/Root.tsx` with ONLY current compositions. **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested filename / clip ID (e.g., `id="clip-01-MG"`). Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
+**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. **TOKEN LIMIT RULE: Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.** **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested filename / clip ID (e.g., `id="clip-01-MG"`). Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
 **Phase 2 — Install:** `npm install --legacy-peer-deps` then `npm install @remotion/media @remotion/three --legacy-peer-deps`
 **Phase 3: GitHub Render & Artifact Download:** Commit, push, trigger workflow natively. Poll `gh run list`. Download artifacts only after `completed` + `success`.
 * **GitHub Action Command Lock (CRITICAL):** To trigger transparent clips on GitHub, you MUST use the boolean flag `-f transparent=true` to engage the ProRes 4444 pipeline on the server. Command: `gh workflow run render.yml -f sceneId="ClipID" -f transparent=true`. For solid MP4 clips, use `-f transparent=false`.

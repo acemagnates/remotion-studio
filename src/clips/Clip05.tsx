@@ -1,76 +1,105 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
-import React from "react";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
+import { ThreeCanvas } from "@remotion/three";
+import { useMemo } from "react";
+import * as THREE from "three";
 
-export const Clip05 = () => {
+const ParticleSystem = ({ count = 50 }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
-  // ACT 1: ENTRANCE
-  const lineEntrance = spring({ frame, fps, config: { damping: 12, stiffness: 200 } });
-  const textEntranceValue = spring({ frame: frame - 10, fps, config: { damping: 15, stiffness: 150 } });
-  
-  const lineH = interpolate(lineEntrance, [0, 1], [0, 180]);
-  const textX = interpolate(textEntranceValue, [0, 1], [-20, 20]);
-  const textOpacity = interpolate(textEntranceValue, [0, 1], [0, 1]);
+  // Burst timing: starts at 24 frames (0.8s)
+  const burstFrame = 24;
+  const burstSpring = spring({
+    frame: frame - burstFrame,
+    fps,
+    config: {
+      damping: 12,
+      stiffness: 100,
+    },
+  });
+
+  const particles = useMemo(() => {
+    return new Array(count).fill(0).map(() => ({
+      position: new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2
+      ).normalize(),
+      speed: Math.random() * 5 + 2,
+    }));
+  }, [count]);
+
+  return (
+    <group>
+      {particles.map((p, i) => {
+        const drift = burstSpring * p.speed;
+        const pos = p.position.clone().multiplyScalar(drift);
+        return (
+          <mesh key={i} position={[pos.x, pos.y, pos.z]}>
+            <boxGeometry args={[0.05, 0.05, 0.05]} />
+            <meshBasicMaterial color="#C9A84C" transparent opacity={interpolate(burstSpring, [0.8, 1], [1, 0])} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+};
+
+export const Clip05: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
+
+  // ACT 1: COUNTER ROLL
+  const rollDuration = 24; // 0.8s
+  const currentNum = Math.floor(
+    interpolate(frame, [0, rollDuration], [0, 2019], {
+      extrapolateRight: "clamp",
+      easing: Easing.out(Easing.quad),
+    })
+  );
 
   // ACT 2: HOLD + EVOLUTION
-  const driftY = interpolate(frame, [0, durationInFrames], [0, -50]);
-  const bgRotation = interpolate(frame, [0, durationInFrames], [0, 90]);
+  const scale = interpolate(frame, [rollDuration, durationInFrames], [1, 1.08], {
+    extrapolateLeft: "clamp",
+  });
 
-  // ACT 3: EXIT
-  const exitProgress = spring({ frame: frame - (durationInFrames - 15), fps });
-  const exitY = interpolate(exitProgress, [0, 1], [0, 100]);
-  const exitOpacity = interpolate(exitProgress, [0, 1], [1, 0]);
+  // ACT 3: EXIT (Glitch)
+  const exitStart = durationInFrames - 15;
+  const isExiting = frame > exitStart;
+  const glitchIntensity = interpolate(frame, [exitStart, durationInFrames], [0, 1]);
+  
+  const glitchStyle = isExiting ? {
+    transform: `translateX(${(Math.random() - 0.5) * 50 * glitchIntensity}px)`,
+    filter: `hue-rotate(${glitchIntensity * 90}deg) brightness(${1 + glitchIntensity})`,
+    clipPath: `inset(${Math.random() * 20}% 0 ${Math.random() * 20}% 0)`,
+  } : {};
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#0A0A0A" }}>
-        {/* Smoked glass background rotation */}
-        <AbsoluteFill style={{
-            background: "radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)",
-            transform: `rotate(${bgRotation}deg)`,
-            opacity: 0.5
-        }} />
+      <ThreeCanvas width={width} height={height}>
+        <ambientLight intensity={0.5} />
+        <pointLight position={[10, 10, 10]} />
+        <ParticleSystem />
+      </ThreeCanvas>
 
-        <AbsoluteFill style={{ 
-            justifyContent: "center", 
-            alignItems: "flex-start", 
-            paddingLeft: "15%",
-            transform: `translateY(${700 + driftY + exitY}px)`,
-            opacity: exitOpacity
+      <AbsoluteFill style={{ 
+        justifyContent: "center", 
+        alignItems: "center",
+        opacity: interpolate(frame, [exitStart, durationInFrames], [1, 0], { extrapolateLeft: "clamp" }),
+        ...glitchStyle
+      }}>
+        <h1 style={{
+          fontFamily: "monospace",
+          fontSize: 240,
+          color: "#FFFFFF",
+          fontWeight: 900,
+          margin: 0,
+          transform: `scale(${scale})`,
+          textShadow: "0 0 20px rgba(201,168,76,0.6)",
         }}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-                {/* Glowing Gold Line */}
-                <div style={{
-                    width: 4,
-                    height: lineH,
-                    backgroundColor: "#C9A84C",
-                    boxShadow: "0 0 15px #C9A84C",
-                    borderRadius: 2
-                }} />
-
-                {/* Text slides out from behind mask */}
-                <div style={{ 
-                    overflow: "hidden", 
-                    marginLeft: 20,
-                    height: 180,
-                    display: "flex",
-                    alignItems: "center"
-                }}>
-                    <div style={{
-                        fontFamily: "sans-serif",
-                        fontSize: 84,
-                        fontWeight: 900,
-                        color: "#FFF",
-                        letterSpacing: "0.05em",
-                        transform: `translateX(${textX}px)`,
-                        opacity: textOpacity,
-                        textTransform: "uppercase"
-                    }}>
-                        The 15th Call
-                    </div>
-                </div>
-            </div>
-        </AbsoluteFill>
+          {currentNum}
+        </h1>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

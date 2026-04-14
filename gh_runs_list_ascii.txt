@@ -1,0 +1,3 @@
+completed	success	fix: update workflow to support sceneId and all new clips	Render Video	master	push	24405529931	2m24s	2026-04-14T14:44:00Z
+completed	failure	feat: implement 10 motion graphic clips	Render Video	master	push	24405436071	54s	2026-04-14T14:42:18Z
+completed	success	fix: Clip17 ThreeCanvas render failure	Render Video	master	push	24371539789	3m39s	2026-04-13T23:08:09Z
