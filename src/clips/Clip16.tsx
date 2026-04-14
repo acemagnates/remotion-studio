@@ -1,68 +1,68 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
-import React from "react";
 
-export const Clip16 = () => {
+export const Clip16: React.FC = () => {
   const frame = useCurrentFrame();
-  const { durationInFrames, width, height } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (Screen tear)
-  const intensity = interpolate(frame, [0, 15, durationInFrames - 10, durationInFrames], [0, 1, 1, 0], { extrapolateRight: "clamp" });
+  // Scanline motion
+  const scanlineY = (frame * 10) % 1920;
 
-  const glitchSlices = new Array(12).fill(0).map((_, i) => {
-    const yStart = (i * 100) / 12;
-    const yEnd = ((i + 1) * 100) / 12;
-    const offset = Math.sin(frame * 0.5 + i) * 50 * intensity * (Math.random() > 0.8 ? 2 : 1);
-    const rOffset = Math.cos(frame * 0.8 + i) * 10 * intensity;
-    const cOffset = -rOffset;
-
-    return (
-      <div key={i} style={{
-        position: "absolute",
-        top: `${yStart}%`,
-        width: "100%",
-        height: `${yEnd - yStart}%`,
-        overflow: "hidden",
-        transform: `translateX(${offset}px)`
-      }}>
-        {/* RGB Channels */}
-        <AbsoluteFill style={{ 
-            backgroundColor: "#000",
-            transform: `translateX(${rOffset}px)`
-        }}>
-           <div style={{ position: "absolute", inset: 0, border: "2px solid rgba(255,0,0,0.5)", opacity: intensity * 0.3 }} />
-        </AbsoluteFill>
-        <AbsoluteFill style={{ 
-            mixBlendMode: "screen",
-            transform: `translateX(${cOffset}px)`
-        }}>
-           <div style={{ position: "absolute", inset: 0, border: "2px solid rgba(0,255,255,0.5)", opacity: intensity * 0.3 }} />
-        </AbsoluteFill>
-
-        {/* Static Noise Overlay */}
-        <AbsoluteFill style={{
-          backgroundImage: "url('https://media.giphy.com/media/oEI9uWUicKgR0ZByQD/giphy.gif')", // Placeholder for noise if allowed, else use CSS
-          backgroundSize: "cover",
-          opacity: 0.1 * intensity,
-          mixBlendMode: "overlay"
-        }} />
-      </div>
-    );
+  // ACT 1: TYPEWRITER
+  const fullText = "> SYSTEM_RULE: PUNISH_DESPERATION";
+  const typeProgress = interpolate(frame, [0, 20], [0, fullText.length], {
+    extrapolateRight: "clamp",
   });
+  const displayedText = fullText.slice(0, Math.floor(typeProgress));
+
+  // ACT 2: GLOW PULSE
+  const glowOpacity = interpolate(Math.sin(frame * 0.1), [-1, 1], [0.3, 0.7]);
+
+  // ACT 3: DELETE
+  const deleteStart = durationInFrames - 15;
+  const deleteProgress = interpolate(frame, [deleteStart, durationInFrames], [0, fullText.length], {
+    extrapolateLeft: "clamp",
+  });
+  const finalText = displayedText.slice(0, Math.max(0, displayedText.length - Math.floor(deleteProgress)));
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#000" }}>
-        {glitchSlices}
-        
-        {/* Rapid white flashes */}
-        {frame % 4 === 0 && (
-            <AbsoluteFill style={{ backgroundColor: "#FFF", opacity: 0.05 * intensity }} />
-        )}
+    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", padding: 80, justifyContent: "center" }}>
+      {/* Scanline */}
+      <div style={{
+        position: "absolute",
+        top: scanlineY,
+        left: 0,
+        width: "100%",
+        height: 4,
+        background: "rgba(201, 168, 76, 0.1)",
+        boxShadow: "0 0 10px rgba(201, 168, 76, 0.2)",
+      }} />
 
-        {/* Scan lines */}
-        <AbsoluteFill style={{
-            backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 3px)",
-            pointerEvents: "none"
+      {/* Red Glow Background Layer */}
+      <AbsoluteFill style={{
+        background: `radial-gradient(circle, rgba(255, 0, 0, ${glowOpacity * 0.4}) 0%, transparent 70%)`,
+        pointerEvents: "none",
+      }} />
+
+      <h1 style={{
+        fontFamily: "Courier New, monospace",
+        fontSize: 70,
+        color: "#C9A84C",
+        fontWeight: "bold",
+        margin: 0,
+        lineHeight: 1.4,
+        textShadow: "0 0 12px rgba(201, 168, 76, 0.8)",
+      }}>
+        {finalText}
+        <span style={{ 
+          display: "inline-block", 
+          width: 40, 
+          height: 60, 
+          backgroundColor: "#C9A84C", 
+          marginLeft: 10,
+          opacity: frame % 10 < 5 ? 1 : 0,
+          verticalAlign: "middle"
         }} />
+      </h1>
     </AbsoluteFill>
   );
 };
