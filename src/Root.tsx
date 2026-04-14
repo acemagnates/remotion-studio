@@ -2,10 +2,14 @@ import { Composition } from "remotion";
 import { Clip01 } from "./clips/Clip01";
 import { Clip03 } from "./clips/Clip03";
 import { Clip05 } from "./clips/Clip05";
+import { Clip06 } from "./clips/Clip06";
+import { Clip09 } from "./clips/Clip09";
+import { Clip10 } from "./clips/Clip10";
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
+      {/* Batch 1 */}
       <Composition
         id="clip-01-MG-transparent"
         component={Clip01}
@@ -25,6 +29,31 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="clip-05-MG"
         component={Clip05}
+        durationInFrames={75}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      {/* Batch 2 */}
+      <Composition
+        id="clip-06-MG"
+        component={Clip06}
+        durationInFrames={90}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-09-MG"
+        component={Clip09}
+        durationInFrames={75}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-10-MG-transparent"
+        component={Clip10}
         durationInFrames={75}
         fps={30}
         width={1080}
