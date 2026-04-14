@@ -28,18 +28,18 @@ jobs:
       - name: Create Output Directory
         run: mkdir -p renders/recipe-batch
         
-      - name: Render Solid Clips
+      - name: Render Solid Clips (H.264)
         run: |
-          for id in clip-01-MG clip-02-MG clip-09-MG clip-12-MG clip-13-MG clip-17-MG; do
+          for id in clip-01-MG clip-02-MG clip-05-MG clip-06-MG clip-11-MG clip-14-MG clip-15-MG; do
             echo "Rendering $id..."
-            npx remotion render src/index.ts $id renders/recipe-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuv420p
+            npx remotion render src/index.ts $id renders/recipe-batch/$id.mp4 --codec=h264
           done
 
-      - name: Render Transparent Clips
+      - name: Render Transparent Clips (VP9)
         run: |
-          for id in clip-03-MG-transparent clip-05-MG-transparent clip-06-MG-transparent clip-11-MG-transparent clip-15-MG-transparent clip-18-MG-transparent clip-19-MG-transparent; do
+          for id in clip-04-MG-transparent clip-07-MG-transparent clip-09-MG-transparent clip-10-MG-transparent clip-13-MG-transparent; do
             echo "Rendering transparent $id..."
-            npx remotion render src/index.ts $id renders/recipe-batch/$id.webm --image-format=png --codec=vp9 --pixel-format=yuva420p
+            npx remotion render src/index.ts $id renders/recipe-batch/$id.webm --image-format=png --pixel-format=yuva420p --codec=vp9
           done
 
       - name: Upload Clips Artifact
