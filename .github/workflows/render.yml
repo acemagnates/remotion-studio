@@ -3,10 +3,20 @@ on:
   push:
     branches: [ master ]
   workflow_dispatch:
+    inputs:
+      sceneId:
+        description: 'The Composition ID to render'
+        required: true
+        default: 'MainScene'
+      transparent:
+        description: 'Whether to render with transparency (ProRes 4444)'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   render:
-    name: Render Remotion Clips
+    name: Render Remotion Clip
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,25 +36,29 @@ jobs:
         run: npx remotion browser ensure
         
       - name: Create Output Directory
-        run: mkdir -p renders/recipe-batch
+        run: mkdir -p renders/
         
-      - name: Render Solid Clips (H.264)
+      - name: Render Solid Clip (MP4)
+        if: github.event.inputs.transparent == 'false' || github.event_name == 'push'
         run: |
-          for id in clip-01-MG clip-02-MG clip-05-MG clip-06-MG clip-11-MG clip-14-MG clip-15-MG; do
-            echo "Rendering $id..."
-            npx remotion render src/index.ts $id renders/recipe-batch/$id.mp4 --codec=h264
-          done
+          # If push, render all hardcoded. If dispatch, render sceneId.
+          if [ "${{ github.event_name }}" == "push" ]; then
+            for id in clip-01-MG clip-03-MG clip-05-MG clip-08-MG clip-10-MG clip-12-MG clip-14-MG clip-16-MG clip-17-MG clip-20-MG; do
+              echo "Rendering $id..."
+              npx remotion render src/index.ts $id renders/$id.mp4 --codec=h264
+            done
+          else
+            npx remotion render src/index.ts ${{ github.event.inputs.sceneId }} renders/${{ github.event.inputs.sceneId }}.mp4 --codec=h264
+          fi
 
-      - name: Render Transparent Clips (VP9)
+      - name: Render Transparent Clip (ProRes)
+        if: github.event.inputs.transparent == 'true'
         run: |
-          for id in clip-04-MG-transparent clip-07-MG-transparent clip-09-MG-transparent clip-10-MG-transparent clip-13-MG-transparent; do
-            echo "Rendering transparent $id..."
-            npx remotion render src/index.ts $id renders/recipe-batch/$id.webm --image-format=png --pixel-format=yuva420p --codec=vp9
-          done
+          npx remotion render src/index.ts ${{ github.event.inputs.sceneId }} renders/${{ github.event.inputs.sceneId }}.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
 
       - name: Upload Clips Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ace-magnates-recipe-batch
-          path: renders/recipe-batch/
+          name: ace-magnates-renders
+          path: renders/
           retention-days: 5
