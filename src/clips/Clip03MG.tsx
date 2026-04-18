@@ -1,102 +1,92 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
-import { evolvePath } from "@remotion/paths";
 
-const KINTSUGI_PATH = "M 540 0 L 520 100 L 560 250 L 530 400 L 550 600 L 540 850 L 560 1100 L 530 1350 L 545 1600 L 540 1920";
-
-export const Clip03MG = () => {
+export const Clip03MG: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 1: ENTRANCE
-  const drawProgress = spring({
-    frame,
-    fps,
-    config: { damping: 20 },
-    durationInFrames: 15,
+  // ACT 1: ENTRANCE (1.0s = 30 frames)
+  const drawProgress = interpolate(frame, [0, 30], [0, 1], {
+    extrapolateRight: "clamp",
+    easing: Easing.bezier(0.22, 1, 0.36, 1),
   });
 
-  const path = evolvePath(drawProgress, KINTSUGI_PATH);
-
-  const splitSlam = spring({
+  const splitSpring = spring({
     frame: frame - 15,
     fps,
     config: { damping: 12, stiffness: 200 },
   });
 
-  const panelOffset = interpolate(splitSlam, [0, 1], [0, 400]);
-
   // ACT 2: HOLD + EVOLUTION
-  const pulse = interpolate(
+  const drift = interpolate(frame, [30, durationInFrames], [0, 50]);
+  const textScale = interpolate(frame, [30, durationInFrames], [1, 1.1]);
+  const glowPulse = interpolate(
     Math.sin(frame * 0.1),
     [-1, 1],
-    [0.8, 1]
+    [0.6, 1]
   );
-  const microDrift = interpolate(frame, [0, durationInFrames], [0, 50]);
 
-  // ACT 3: EXIT
-  const exit = interpolate(
+  // ACT 3: EXIT (0.5s = 15 frames)
+  const exitScale = interpolate(
     frame,
     [durationInFrames - 15, durationInFrames],
-    [0, 1],
+    [1, 5],
     { extrapolateLeft: "clamp" }
   );
-  const dropZ = interpolate(exit, [0, 1], [0, 1000]);
-  const fade = interpolate(exit, [0, 1], [1, 0]);
+  const exitOpacity = interpolate(
+    frame,
+    [durationInFrames - 15, durationInFrames - 5],
+    [1, 0],
+    { extrapolateLeft: "clamp" }
+  );
+
+  const splitWidth = splitSpring * (150 + drift);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", perspective: 1000, overflow: "hidden" }}>
-      {/* Left Panel */}
+    <AbsoluteFill style={{ backgroundColor: "#000", transform: `scale(${exitScale})`, opacity: exitOpacity }}>
+      {/* Background - reveal text */}
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
+        <h1
+          style={{
+            color: "#C9A84C",
+            fontSize: 120,
+            fontWeight: 900,
+            fontFamily: "Inter, sans-serif",
+            textAlign: "center",
+            textShadow: `0 0 ${20 * glowPulse}px rgba(201,168,76,0.8)`,
+            transform: `scale(${textScale})`,
+          }}
+        >
+          PASSIVE<br />INCOME
+        </h1>
+      </AbsoluteFill>
+
+      {/* Obsidian Panels */}
       <div
         style={{
           position: "absolute",
           left: 0,
           top: 0,
-          width: "50%",
-          height: "100%",
+          bottom: 0,
+          right: `calc(50% + ${splitWidth / 2}px)`,
           backgroundColor: "#0A0A0A",
-          transform: `translateX(${-panelOffset - microDrift}px) translateZ(${-dropZ}px)`,
-          opacity: fade,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          borderRight: "2px solid #C9A84C",
-          boxShadow: `0 0 20px rgba(201, 168, 76, ${pulse * 0.5})`,
+          boxShadow: "10px 0 30px rgba(0,0,0,0.8)",
           zIndex: 2,
         }}
-      >
-        <div style={{ padding: "20px 40px", backgroundColor: "#FF0000", color: "#FFF", fontSize: 60, fontWeight: 900 }}>
-          TERMINATED
-        </div>
-      </div>
-
-      {/* Right Panel */}
+      />
       <div
         style={{
           position: "absolute",
           right: 0,
           top: 0,
-          width: "50%",
-          height: "100%",
+          bottom: 0,
+          left: `calc(50% + ${splitWidth / 2}px)`,
           backgroundColor: "#0A0A0A",
-          transform: `translateX(${panelOffset + microDrift}px) translateZ(${-dropZ}px)`,
-          opacity: fade,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          borderLeft: "2px solid #C9A84C",
-          boxShadow: `0 0 20px rgba(201, 168, 76, ${pulse * 0.5})`,
+          boxShadow: "-10px 0 30px rgba(0,0,0,0.8)",
           zIndex: 2,
         }}
-      >
-        {/* Simple grey cubicle grid icon surrogate */}
-        <div style={{ width: 200, height: 200, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-          {new Array(9).fill(0).map((_, i) => (
-            <div key={i} style={{ backgroundColor: "#555", borderRadius: 4 }} />
-          ))}
-        </div>
-      </div>
+      />
 
-      {/* Fracture Line (Only visible before/during split) */}
+      {/* Gold Fracture Line */}
       <svg
         viewBox="0 0 1080 1920"
         style={{
@@ -106,19 +96,18 @@ export const Clip03MG = () => {
           width: "100%",
           height: "100%",
           zIndex: 3,
-          pointerEvents: "none",
-          opacity: interpolate(splitSlam, [0, 0.5], [1, 0]),
+          overflow: "visible",
         }}
       >
         <path
-          d={KINTSUGI_PATH}
+          d="M 540 0 L 520 200 L 560 400 L 510 600 L 550 800 L 530 1000 L 570 1200 L 520 1400 L 550 1600 L 530 1920"
           fill="none"
           stroke="#C9A84C"
-          strokeWidth="8"
-          strokeDasharray={path.strokeDasharray}
-          strokeDashoffset={path.strokeDashoffset}
+          strokeWidth="6"
+          strokeDasharray="2000"
+          strokeDashoffset={2000 * (1 - drawProgress)}
           style={{
-            filter: "drop-shadow(0 0 8px rgba(201, 168, 76, 0.8))",
+            filter: "drop-shadow(0 0 10px rgba(201,168,76,0.8))",
           }}
         />
       </svg>

@@ -1,76 +1,104 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
-export const Clip05MG_Transparent = () => {
+export const Clip05MG_Transparent: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 1: ENTRANCE
-  const lineDraw = spring({
+  // ACT 1: ENTRANCE (0.5s = 15 frames)
+  const lineEntrance = spring({
     frame,
     fps,
-    config: { damping: 20 },
-    durationInFrames: 12,
+    config: { damping: 15, stiffness: 200 },
   });
 
-  const textSlide = spring({
-    frame: frame - 10,
+  const textSpring = spring({
+    frame: frame - 5,
     fps,
-    config: { damping: 15, stiffness: 100 },
+    config: { damping: 12, stiffness: 200 },
   });
 
-  const lineWidth = interpolate(lineDraw, [0, 1], [0, 600]);
-  const textY = interpolate(textSlide, [0, 1], [100, 0]);
-  const textOpacity = interpolate(textSlide, [0, 0.5], [0, 1]);
-
-  // ACT 2: HOLD + EVOLUTION
-  const shimmer = interpolate(
-    Math.sin(frame * 0.15),
+  // ACT 2: HOLD + EVOLUTION (2.0s = 60 frames)
+  const drift = interpolate(frame, [0, durationInFrames], [0, 5]);
+  const glowPulse = interpolate(
+    Math.sin(frame * 0.1),
     [-1, 1],
-    [0.6, 1]
+    [0.7, 1]
   );
-  const drift = interpolate(frame, [0, durationInFrames], [0, 15]);
 
-  // ACT 3: EXIT
-  const exit = interpolate(
+  // ACT 3: EXIT (0.5s = 15 frames)
+  const exitProgress = interpolate(
     frame,
     [durationInFrames - 15, durationInFrames],
     [0, 1],
     { extrapolateLeft: "clamp" }
   );
-  
-  const exitSlide = interpolate(exit, [0, 1], [0, 100]);
-  const exitLine = interpolate(exit, [0, 1], [1, 0]);
+
+  const containerX = 150 + drift;
+  const containerY = 1600;
 
   return (
-    <AbsoluteFill style={{ padding: "100px", justifyContent: "flex-end", alignItems: "flex-start", transform: `translateX(${drift}px)` }}>
-      <div style={{ position: "relative", overflow: "hidden", height: 150, width: 700 }}>
-        {/* Gold Line */}
+    <AbsoluteFill>
+      {/* NO BACKGROUND FOR TRANSPARENT CLIP */}
+      <div
+        style={{
+          position: "absolute",
+          left: containerX,
+          top: containerY,
+          opacity: 1 - exitProgress,
+        }}
+      >
+        {/* Glass Plate */}
         <div
           style={{
             position: "absolute",
             bottom: 0,
             left: 0,
-            height: 4,
-            width: lineWidth * exitLine,
-            backgroundColor: "#C9A84C",
-            boxShadow: `0 0 15px rgba(201, 168, 76, ${shimmer})`,
+            width: 600,
+            height: 100,
+            backgroundColor: "rgba(10,10,10,0.4)",
+            // backdropFilter: 'blur(12px)', // BANNED
+            borderRadius: "4px",
+            zIndex: -1,
+            transform: `scaleX(${lineEntrance})`,
+            transformOrigin: "left",
           }}
         />
-        
-        {/* Text */}
+
+        {/* Text with Masking */}
         <div
           style={{
-            position: "absolute",
-            bottom: 10,
-            left: 0,
-            transform: `translateY(${textY + exitSlide}px)`,
-            opacity: textOpacity,
+            overflow: "hidden",
+            height: 80,
+            display: "flex",
+            alignItems: "flex-end",
+            paddingBottom: 10,
           }}
         >
-          <h2 style={{ fontFamily: "Arial, sans-serif", fontSize: 60, color: "#FFF", fontWeight: 700, margin: 0, letterSpacing: 4 }}>
-            ELIAS <span style={{ color: "#C9A84C" }}>//</span> ANALYST
+          <h2
+            style={{
+              color: "white",
+              fontSize: 48,
+              fontWeight: 700,
+              fontFamily: "Inter, sans-serif",
+              margin: 0,
+              transform: `translateY(${(1 - textSpring + exitProgress) * 100}px)`,
+              letterSpacing: "0.1em",
+              textShadow: "0 0 10px rgba(0,0,0,0.5)",
+            }}
+          >
+            14 MONTHS EARLIER
           </h2>
         </div>
+
+        {/* Gold Line */}
+        <div
+          style={{
+            width: lineEntrance * 600 * (1 - exitProgress),
+            height: 2,
+            backgroundColor: "#C9A84C",
+            boxShadow: `0 0 ${10 * glowPulse}px #C9A84C`,
+          }}
+        />
       </div>
     </AbsoluteFill>
   );

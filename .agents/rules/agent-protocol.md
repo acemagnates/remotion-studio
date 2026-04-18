@@ -21,15 +21,19 @@ trigger: always_on
   `npx remotion render src/index.ts MainScene out.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le`
 * **Min Duration:** `durationInFrames` ≥ **75** (2.5s at 30fps). Round UP if shorter.
 
-## 3. Dependencies
-Run commands ONE AT A TIME in PowerShell. No `&&` chaining. ALWAYS use `--legacy-peer-deps`.
+## 3. Dependencies & File Management
+* Use built-in file writing API tools exclusively. Do not use terminal commands like `mv` or `cp` to manage files if they risk overwriting.
+* Run commands ONE AT A TIME in PowerShell. No `&&` or `;` or `\;` chaining. Each tool call must be its own separate execution. ALWAYS use `--legacy-peer-deps`.
 * Version mismatch? Run `npx remotion upgrade --legacy-peer-deps`.
 
 ## 4. Execution Pipeline
-**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. **TOKEN LIMIT RULE: Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.** **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested filename / clip ID (e.g., `id="clip-01-MG"`). Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
+**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. **TOKEN LIMIT RULE: Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.** **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested clip type. Solid clips MUST be `id="clip-01-MG"` and transparent clips MUST be `id="clip-01-MG-transparent"`. Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
 **Phase 2 — Install:** `npm install --legacy-peer-deps` then `npm install @remotion/media @remotion/three --legacy-peer-deps`
-**Phase 3: GitHub Render & Artifact Download:** Commit, push, trigger workflow natively. Poll `gh run list`. Download artifacts only after `completed` + `success`.
-* **GitHub Action Command Lock (CRITICAL):** To trigger transparent clips on GitHub, you MUST use the boolean flag `-f transparent=true` to engage the ProRes 4444 pipeline on the server. Command: `gh workflow run render.yml -f sceneId="ClipID" -f transparent=true`. For solid MP4 clips, use `-f transparent=false`.
+**Phase 3: GitHub Render & Artifact Download:** Commit, push, trigger workflow natively. 
+* **Git Integrity Rules:** Use separate commands (`git add .`, then `git commit -m`, then `git push`). Do NOT use `;` chaining. Never use `git ls-files --staged`. Ensure the push doesn't hang.
+* **GitHub Action Parallel Matrix Rendering:** Simply trigger the batch render workflow: `gh workflow run render-batch.yml`. This automatically detects clips and spawns parallel runners.
+* **Polling GitHub Actions:** Check status strictly with `gh run list --limit 5` (never `-n`). Do NOT pipe output through `jq` in PowerShell; just read the raw text.
+* **Downloading Artifacts:** Once the run status is `completed` and `success`, download the artifacts using exactly `gh run download <Run-ID>`. Do NOT pass the `--workflow` flag.
 **Phase 4 — Handoff:** Once downloaded, HALT and report: 🚀 Clips ready in the dedicated folder.
 
 ---
@@ -85,25 +89,20 @@ export const MainScene = () => {
 ## 6. CINEMATIC CODE LIBRARY (HARDWARE-ACCELERATED ONLY)
 BANNED: `backdrop-filter`, SVG `<feTurbulence>`, `filter: blur`, `top`/`left` animation. These crash the renderer.
 
-**1. Bloom Glow:** Max 2 `textShadow` layers: `"0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)"`. Allowed on ALL clips including transparent (native alpha preserves glow perfectly).
-
-**2. Particles:** Max 20 divs. Animate with `transform: translate()` + `opacity` ONLY. See starter boilerplate for pattern.
-
-**3. Continuous Micro-Motion:** Elements NEVER stop. `const scale = interpolate(frame, [0, durationInFrames], [1, 1.08]);` Apply via `transform: scale()`.
-
-**4. Obsidian Vault BG:** `radial-gradient(circle at 50% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)`. (CRITICAL: Do NOT use this if the clip is requested as TRANSPARENT. Remove ALL background — leave empty for native alpha rendering via ProRes).
-
-**5. Counter Roll:** `Math.floor(interpolate(frame, [0, 1.5*fps], [0, targetNum], { extrapolateRight:"clamp", easing: Easing.out(Easing.quad) }))` → format with `.toLocaleString()`.
-
-**6. Stagger Entrance:** Per-element spring with delay: `spring({ frame, fps, delay: i * 8, config: { damping: 12, stiffness: 200 } })`. Apply `translateY` + `opacity`.
-
-**7. SVG Path Draw:** `import { evolvePath } from "@remotion/paths"`. Animate `progress` 0→1 with `interpolate`. Apply `strokeDasharray`/`strokeDashoffset` from `evolvePath(progress, pathString)` to `<path>`. Use for Kintsugi fractures, chart lines.
-
-**8. Text Morphing:** Two text layers. At `morphPoint = durationInFrames * 0.4`: Word A fades out + scales to 1.3, Word B fades in + scales from 0.7→1. Use `interpolate` for opacity + scale with clamp on both sides.
-
-**9. Orbital Ring:** `const angle = interpolate(frame, [0, durationInFrames], [0, 360])`. Apply `transform: perspective(800px) rotateX(70deg) rotateZ(${angle}deg)` on a `border: 1px solid #C9A84C` circle div.
-
-**10. Glitch/Scanline:** 8 divs with `clipPath: inset(yStart% 0 (100-yEnd)% 0)` + `translateX(Math.sin(frame*0.5+i*2) * 30 * intensity)`. Intensity ramps 0→1→1→0 over ~1s using `interpolate`.
+**1. Bloom Glow:** `textShadow: "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)"` (Max 2 layers).
+**2. Particles:** Max 20 divs. `transform: translate()` + `opacity`. (See boilerplate).
+**3. Micro-Motion:** Elements NEVER stop. `const sc=interpolate(frame,[0,dur],[1,1.08]);` -> `transform: scale(sc)`
+**4. Vault BG:** `radial-gradient(circle at 50% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)`. (NO BG if TRANSPARENT).
+**5. Counter:** `Math.floor(interpolate(frame,[0,1.5*fps],[0,target],{extrapolateRight:"clamp",easing:Easing.out(Easing.quad)})).toLocaleString()`
+**6. Stagger:** `spring({frame,fps,delay:i*8,config:{damping:12,stiffness:200}})`. Apply to `translateY`/`opacity`.
+**7. SVG Draw:** `@remotion/paths` `evolvePath`. `progress` 0->1. Apply `strokeDasharray`/`strokeDashoffset` to `<path>`.
+**8. Text Morph:** 2 layers. At `dur*0.4`: Word A fades out + scales->1.3. Word B fades in + scales 0.7->1.
+**9. Orbital Ring:** `const angle=interpolate(frame,[0,dur],[0,360]);` -> `transform: perspective(800px) rotateX(70deg) rotateZ(${angle}deg)` on border circle.
+**10. Glitch:** 8 divs with `clipPath: inset(y% 0 (100-y)% 0)`+`translateX(Math.sin(frame*0.5+i*2)*30*intensity)`. Ramps 0->1->1->0 over ~1s.
+**11. Paper Cutout:** rough `clipPath` + heavy `boxShadow`. `transform: scale(spring)*rotate(int(-15,-3)deg)`.
+**12. Minimal Vector:** @remotion/paths smooth drawing line (`damping:200`) w/ subtle drop-shadow glow.
+**13. Float 3D:** Wrapper `perspective:1000`. Inner: `rotateX(15deg) rotateY(-10deg) translateZ(int(0,200)px) translateY(Math.sin(f/15)*10)`
+**14. Neon 3D Kinetic:** `<h1 style={{transform:\`scale(${spring(10)}) rotateX(int(15,-10)) rotateY(int(-15,10)) translateZ(Math.sin(f/20)*50px)\`, textShadow:'0 0 60px rgba(0,255,136,0.4)...'}}>` in `perspective:1200` container.
 
 ---
 
