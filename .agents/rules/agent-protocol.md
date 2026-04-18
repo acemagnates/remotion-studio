@@ -15,10 +15,9 @@ trigger: always_on
 * **Animations:** ALL driven by `useCurrentFrame()`. NO CSS Keyframes, NO Framer Motion.
 * **Assets:** Do NOT use `staticFile()` unless user provides the file. Placeholders: `https://remotion.media/video.mp4` / `https://remotion.media/audio.mp3`
 * **Three.js (CRITICAL):** You MUST pass `width` and `height` props to `<ThreeCanvas width={width} height={height}>` (get them from `useVideoConfig()`). Never use `useFrame()`. If a recipe does not require 3D, do NOT import ThreeJS to save bundle size.
-* **Transparency (React) (CRITICAL):** If a clip is TRANSPARENT, the root `<AbsoluteFill>` MUST have NO background at all — no color, no gradient, nothing. Simply omit the `background`/`backgroundColor` style property entirely. The ProRes `.mov` renderer will preserve the alpha channel natively. Bloom glows and text-shadows ARE allowed on transparent clips.
-* **Transparency (Three.js):** Pass `<ThreeCanvas alpha={true} width={width} height={height}>`.
-* **Transparent Render Flags (CRITICAL):** You MUST render transparent overlays as ProRes files using the Apple ProRes 4444 codec to preserve the natively-supported alpha channel for Premiere/CapCut. File sizes will be larger, which is acceptable. You MUST include `--image-format=png` to prevent Remotion from stripping the transparency. Use this EXACT command:
-  `npx remotion render src/index.ts MainScene out.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le`
+* **Transparency (React) (CRITICAL):** For overlays meant to be composited, you MUST use a perfect Green Screen background. Set the root `<AbsoluteFill style={{ backgroundColor: '#00FF00' }}>`. 
+* **Green Screen Design Physics (CRITICAL):** Do NOT use soft opacities for overlays, as they blend with green and cause fringing. If using particles, keep them small and 100% opaque. Limit the radius of bloom glows.
+* **Render Settings:** All clips, solid or green screen, render natively as H264 `.mp4`. No special codecs needed.
 * **Min Duration:** `durationInFrames` ≥ **75** (2.5s at 30fps). Round UP if shorter.
 
 ## 3. Dependencies & File Management
@@ -27,10 +26,10 @@ trigger: always_on
 * Version mismatch? Run `npx remotion upgrade --legacy-peer-deps`.
 
 ## 4. Execution Pipeline
-**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. **TOKEN LIMIT RULE: Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.** **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested clip type. Solid clips MUST be `id="clip-01-MG"` and transparent clips MUST be `id="clip-01-MG-transparent"`. Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
+**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. **TOKEN LIMIT RULE: Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.** **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested clip type. Solid clips MUST be `id="clip-01-MG"` and green screen overlays MUST be `id="clip-01-MG-overlay"`. Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
 **Phase 2 — Install:** `npm install --legacy-peer-deps` then `npm install @remotion/media @remotion/three --legacy-peer-deps`
 **Phase 3: GitHub Render & Artifact Download:** Commit, push, trigger workflow natively. 
-* **Git Integrity Rules:** Use separate commands (`git add .`, then `git commit -m`, then `git push`). Do NOT use `;` chaining. Never use `git ls-files --staged`. Ensure the push doesn't hang.
+* **Git Integrity & File Size Rules:** NEVER run `git add .` indiscriminately if there are large media files (.mp4, .webm, .mov) in the workspace. GitHub will reject pushes over 100MB. ALWAYS explicitly exclude them using `.gitignore` first (e.g., `echo "*.webm" >> .gitignore` etc) before adding, or only `git add` specific code files. Use separate commands (`git add .`, then `git commit -m`, then `git push`). Do NOT use `;` chaining. Never use `git ls-files --staged`.
 * **GitHub Action Parallel Matrix Rendering:** Simply trigger the batch render workflow: `gh workflow run render-batch.yml`. This automatically detects clips and spawns parallel runners.
 * **Polling GitHub Actions:** Check status strictly with `gh run list --limit 5` (never `-n`). Do NOT pipe output through `jq` in PowerShell; just read the raw text.
 * **Downloading Artifacts:** Once the run status is `completed` and `success`, download the artifacts using exactly `gh run download <Run-ID>`. Do NOT pass the `--workflow` flag.
@@ -67,9 +66,9 @@ export const MainScene = () => {
       transform: `translate(${(i*73)%1080}px, ${1920-((frame*((i%3)+0.5)*1.5+i*130)%2200)}px)` }} />
   ));
   return (
-    <AbsoluteFill style={{ opacity: exit }}>
-      {/* CRITICAL: If this is a TRANSPARENT clip, REMOVE this background entirely (no gradient, no color). Render with ProRes for native alpha. */}
-      <AbsoluteFill style={{ background: `radial-gradient(circle at ${gShift}% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)` }} />
+    <AbsoluteFill style={{ opacity: exit, backgroundColor: '#00FF00' }}>
+      {/* CRITICAL: Example of a Green Screen overlay background. If this is a SOLID clip, replace the \#00FF00 with a dark radial gradient vault BG. */}
+      {/* <AbsoluteFill style={{ background: `radial-gradient(circle at ${gShift}% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)` }} /> */}
       {particles}
       <div style={{ position: "absolute", top: "46%", left: "50%", transform: "translateX(-50%)", width: lineW, height: 1, backgroundColor: "#C9A84C", opacity: 0.8 }} />
       <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
@@ -92,7 +91,7 @@ BANNED: `backdrop-filter`, SVG `<feTurbulence>`, `filter: blur`, `top`/`left` an
 **1. Bloom Glow:** `textShadow: "0 0 12px rgba(201,168,76,0.8), 0 4px 20px rgba(0,0,0,0.8)"` (Max 2 layers).
 **2. Particles:** Max 20 divs. `transform: translate()` + `opacity`. (See boilerplate).
 **3. Micro-Motion:** Elements NEVER stop. `const sc=interpolate(frame,[0,dur],[1,1.08]);` -> `transform: scale(sc)`
-**4. Vault BG:** `radial-gradient(circle at 50% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)`. (NO BG if TRANSPARENT).
+**4. Vault BG:** `radial-gradient(circle at 50% 45%, rgba(30,25,15,1) 0%, rgba(5,5,5,1) 60%, rgba(0,0,0,1) 100%)`. (If OVERLAY, use `#00FF00`).
 **5. Counter:** `Math.floor(interpolate(frame,[0,1.5*fps],[0,target],{extrapolateRight:"clamp",easing:Easing.out(Easing.quad)})).toLocaleString()`
 **6. Stagger:** `spring({frame,fps,delay:i*8,config:{damping:12,stiffness:200}})`. Apply to `translateY`/`opacity`.
 **7. SVG Draw:** `@remotion/paths` `evolvePath`. `progress` 0->1. Apply `strokeDasharray`/`strokeDashoffset` to `<path>`.

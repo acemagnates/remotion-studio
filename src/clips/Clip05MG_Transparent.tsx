@@ -1,105 +1,79 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
-export const Clip05MG_Transparent: React.FC = () => {
-  const frame = useCurrentFrame();
+const Fragment = ({ i, frame, exit }: { i: number; frame: number; exit: number }) => {
   const { fps, durationInFrames } = useVideoConfig();
-
-  // ACT 1: ENTRANCE (0.5s = 15 frames)
-  const lineEntrance = spring({
-    frame,
-    fps,
-    config: { damping: 15, stiffness: 200 },
-  });
-
-  const textSpring = spring({
+  
+  // ACT 1: ENTRANCE (violent radial burst 0.5-1.0s)
+  const burst = spring({
     frame: frame - 5,
     fps,
-    config: { damping: 12, stiffness: 200 },
+    config: { damping: 12, stiffness: 150, mass: 0.5 },
   });
 
-  // ACT 2: HOLD + EVOLUTION (2.0s = 60 frames)
-  const drift = interpolate(frame, [0, durationInFrames], [0, 5]);
-  const glowPulse = interpolate(
-    Math.sin(frame * 0.1),
-    [-1, 1],
-    [0.7, 1]
-  );
+  const angle = (i * 137.5) % 360; // Distribution
+  const speed = 200 + (i % 15) * 150;
+  const distance = burst * speed;
+  
+  // ACT 2: HOLD + EVOLUTION (slow drift in 3D space)
+  const slowDrift = interpolate(frame, [0, durationInFrames], [0, 80]);
+  const rotation = interpolate(frame, [0, durationInFrames], [0, angle * 0.5]);
+  
+  const color = i % 3 === 0 ? "#0A0A0A" : "#C9A84C";
+  
+  // Fake 3D depth
+  const translateZ = interpolate(frame, [0, durationInFrames], [0, i * 10]);
 
-  // ACT 3: EXIT (0.5s = 15 frames)
-  const exitProgress = interpolate(
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        width: 150 + (i % 5) * 40,
+        height: 120 + (i % 3) * 60,
+        backgroundColor: color,
+        opacity: exit * 0.9,
+        clipPath: `polygon(${(i*17)%30}% ${(i*11)%20}%, 100% ${(i*7)%30}%, ${(80+i*3)%100}% 100%, 0% ${(70+i*2)%100}%)`,
+        transform: `translate(-50%, -50%) translate(${Math.cos(angle) * (distance + slowDrift)}px, ${Math.sin(angle) * (distance + slowDrift)}px) perspective(1000px) rotateX(${rotation}deg) rotateY(${rotation * 0.5}deg) translateZ(${translateZ}px)`,
+        boxShadow: i % 3 !== 0 ? "0 0 30px rgba(201,168,76,0.6)" : "0 10px 40px rgba(0,0,0,0.8)",
+        border: "1px solid rgba(255,255,255,0.1)",
+      }}
+    />
+  );
+};
+
+export const Clip05MG_Transparent: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  // ACT 3: EXIT (0.3–0.5s)
+  const exit = interpolate(
     frame,
-    [durationInFrames - 15, durationInFrames],
-    [0, 1],
+    [durationInFrames - 12, durationInFrames],
+    [1, 0],
     { extrapolateLeft: "clamp" }
   );
 
-  const containerX = 150 + drift;
-  const containerY = 1600;
-
   return (
-    <AbsoluteFill>
-      {/* NO BACKGROUND FOR TRANSPARENT CLIP */}
-      <div
-        style={{
-          position: "absolute",
-          left: containerX,
-          top: containerY,
-          opacity: 1 - exitProgress,
-        }}
-      >
-        {/* Glass Plate */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: 600,
-            height: 100,
-            backgroundColor: "rgba(10,10,10,0.4)",
-            // backdropFilter: 'blur(12px)', // BANNED
-            borderRadius: "4px",
-            zIndex: -1,
-            transform: `scaleX(${lineEntrance})`,
-            transformOrigin: "left",
-          }}
-        />
-
-        {/* Text with Masking */}
-        <div
-          style={{
-            overflow: "hidden",
-            height: 80,
-            display: "flex",
-            alignItems: "flex-end",
-            paddingBottom: 10,
-          }}
-        >
-          <h2
-            style={{
-              color: "white",
-              fontSize: 48,
-              fontWeight: 700,
-              fontFamily: "Inter, sans-serif",
-              margin: 0,
-              transform: `translateY(${(1 - textSpring + exitProgress) * 100}px)`,
-              letterSpacing: "0.1em",
-              textShadow: "0 0 10px rgba(0,0,0,0.5)",
-            }}
-          >
-            14 MONTHS EARLIER
-          </h2>
-        </div>
-
-        {/* Gold Line */}
-        <div
-          style={{
-            width: lineEntrance * 600 * (1 - exitProgress),
-            height: 2,
-            backgroundColor: "#C9A84C",
-            boxShadow: `0 0 ${10 * glowPulse}px #C9A84C`,
-          }}
-        />
-      </div>
+    <AbsoluteFill style={{ backgroundColor: '#00FF00', overflow: 'hidden' }}>
+      <AbsoluteFill style={{ perspective: 2000 }}>
+        {new Array(18).fill(0).map((_, i) => (
+          <Fragment key={i} i={i} frame={frame} exit={exit} />
+        ))}
+      </AbsoluteFill>
+      
+      {/* Central light burst flash at start */}
+      {frame < 20 && (
+          <div style={{
+              position: 'absolute',
+              top: '50%', left: '50%',
+              width: 500, height: 500,
+              transform: 'translate(-50%, -50%)',
+              background: 'radial-gradient(circle, white 0%, rgba(201,168,76,0.8) 40%, transparent 70%)',
+              opacity: interpolate(frame, [0, 15], [1, 0]),
+              filter: 'blur(40px)',
+          }} />
+      )}
     </AbsoluteFill>
   );
 };
