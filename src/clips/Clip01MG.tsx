@@ -14,8 +14,8 @@ export const Clip01MG = () => {
   });
 
   // ACT 2 — HOLD + EVOLUTION
-  const driftRotationX = interpolate(frame, [0, durationInFrames], [15, 20]);
-  const driftRotationY = interpolate(frame, [0, durationInFrames], [-5, 5]);
+  const driftRotationX = interpolate(frame, [0, durationInFrames], [15, 22]);
+  const driftRotationY = interpolate(frame, [0, durationInFrames], [-8, 8]);
   const bloomPulse = interpolate(
     Math.sin((frame / fps) * 3),
     [-1, 1],
@@ -42,18 +42,19 @@ export const Clip01MG = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#0A0A0A" }}>
-      {/* Technical Directive: @remotion/three for floating 3D container elements */}
+      {/* Background 3D elements */}
       <ThreeCanvas width={width} height={height}>
         <ambientLight intensity={0.2} />
-        <pointLight position={[10, 10, 10]} intensity={1} />
-        <group rotation={[Math.PI / 8, 0, 0]}>
-          <mesh position={[0, 0, -5]}>
-            <planeGeometry args={[10, 10]} />
-            <meshStandardMaterial color="#111" wireframe opacity={0.3} transparent />
-          </mesh>
+        <pointLight position={[10, 10, 10]} intensity={1.5} />
+        <group rotation={[Math.PI / 10, 0, 0]}>
+           <mesh position={[0, 0, -5]}>
+             <boxGeometry args={[10, 10, 0.1]} />
+             <meshStandardMaterial color="#1c1c1c" wireframe opacity={0.4} transparent />
+           </mesh>
         </group>
       </ThreeCanvas>
 
+      {/* Foreground 3D Text via CSS (best for bloom/neon) */}
       <AbsoluteFill style={{ 
         justifyContent: "center", 
         alignItems: "center",
@@ -62,9 +63,6 @@ export const Clip01MG = () => {
         <div style={{
           transform: `scale(${finalScale}) rotateX(${driftRotationX}deg) rotateY(${driftRotationY}deg)`,
           opacity: exitOpacity,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
         }}>
           <h1 style={{
             fontFamily: "sans-serif",
@@ -74,10 +72,12 @@ export const Clip01MG = () => {
             textAlign: "center",
             margin: 0,
             letterSpacing: "0.05em",
+            textTransform: "uppercase",
             textShadow: `
-              0 0 ${20 * bloomPulse}px rgba(201, 168, 76, 0.9),
-              0 0 ${50 * bloomPulse}px rgba(201, 168, 76, 0.5),
-              0 10px 40px rgba(0, 0, 0, 1)
+              0 0 ${20 * bloomPulse}px rgba(201, 168, 76, 1),
+              0 0 ${50 * bloomPulse}px rgba(201, 168, 76, 0.6),
+              0 0 ${80 * bloomPulse}px rgba(201, 168, 76, 0.3),
+              0 15px 40px rgba(0, 0, 0, 1)
             `
           }}>
             HIGH SCHOOL<br/>DROPOUT

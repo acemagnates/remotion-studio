@@ -21,7 +21,7 @@ trigger: always_on
 * **Min Duration:** `durationInFrames` ≥ **75** (2.5s at 30fps). Round UP if shorter.
 
 ## 3. Dependencies & File Management
-* Use built-in file writing API tools exclusively. Do not use terminal commands like `mv` or `cp` to manage files if they risk overwriting.
+* Use built-in file writing API tools exclusively. Do NOT use terminal commands like `mkdir`, `mkdir -p`, `mv`, or `cp` to create directories or manage files, as UNIX flags cause PowerShell errors and false positives.
 * Run commands ONE AT A TIME in PowerShell. No `&&` or `;` or `\;` chaining. Each tool call must be its own separate execution. ALWAYS use `--legacy-peer-deps`.
 * Version mismatch? Run `npx remotion upgrade --legacy-peer-deps`.
 
