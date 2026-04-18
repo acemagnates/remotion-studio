@@ -17,9 +17,11 @@ jobs:
       - name: Identify Compositions
         id: set-matrix
         run: |
-          # Use node to get compositions JSON cleanly
-          COMPS=$(node -e "const { getCompositions } = require('@remotion/renderer'); (async () => { const comps = await getCompositions('./src/index.ts'); console.log(JSON.stringify(comps.map(c => ({ id: c.id, transparent: c.id.includes('transparent') })))); })()")
-          echo "matrix=$COMPS" >> $GITHUB_OUTPUT
+          COMPS=$(npx remotion compositions src/index.ts --json)
+          echo "Compositions identified: $COMPS"
+          # Filter only the requested clips if needed, but for now we take all
+          MATRIX=$(node -e "const comps = $COMPS; console.log(JSON.stringify(comps.map(c => ({ id: c.id, transparent: c.id.includes('transparent') }))))")
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
   render:
     needs: identify
