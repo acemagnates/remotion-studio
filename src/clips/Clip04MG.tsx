@@ -1,90 +1,104 @@
-import React from "react";
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
 
-export const Clip04MG: React.FC = () => {
+const Bar = ({ height, delay, color }: { height: number; delay: number; color: string }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  
+  const growth = spring({
+    frame,
+    fps,
+    delay,
+    config: { damping: 12, stiffness: 100 }
+  });
+
+  const exit = spring({
+    frame: frame - 60,
+    fps,
+    config: { damping: 20, stiffness: 100 }
+  });
+
+  const currentHeight = interpolate(growth, [0, 1], [0, height]) * interpolate(exit, [0, 1], [1, 0]);
+  const shimmer = interpolate(Math.sin(frame * 0.2 + delay), [-1, 1], [0.8, 1]);
+
+  return (
+    <div style={{
+      width: 100,
+      height: currentHeight,
+      backgroundColor: color,
+      margin: "0 20px",
+      borderRadius: "10px 10px 0 0",
+      boxShadow: `0 0 20px ${color}80`,
+      opacity: shimmer
+    }} />
+  );
+};
+
+export const Clip04MG = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (0.5–1.0s)
-  const gridOpacity = interpolate(frame, [0, 30], [0, 0.15], { extrapolateRight: "clamp" });
-  
-  // Line drawing progress
-  const lineProgress = spring({
-    frame: frame - 15,
+  const dollarSlam = spring({
+    frame: frame - 30,
     fps,
-    config: { damping: 20 },
+    config: { damping: 10, stiffness: 200 }
   });
-
-  // Sharp plunge path
-  // Starts at y=600, goes slightly up/down, then plunges at frame ~45
-  const path = "M -50 800 L 200 750 L 400 820 L 500 700 L 600 1400 L 800 1600 L 1130 1550";
-  
-  // ACT 2: HOLD + EVOLUTION (1.5–2.5s)
-  const parallax = interpolate(frame, [0, durationInFrames], [1, 1.1], { extrapolateRight: "clamp" });
-  const shimmer = interpolate(Math.sin(frame / 15), [-1, 1], [0.6, 1]);
-
-  // ACT 3: EXIT (0.3–0.5s)
-  const exit = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
-
-  // Floating particles for exit dissolve
-  const particles = new Array(20).fill(0).map((_, i) => {
-    const move = interpolate(frame, [durationInFrames - 20, durationInFrames], [0, 100 + i * 5]);
-    const op = interpolate(frame, [durationInFrames - 20, durationInFrames - 5], [0, 1], { extrapolateRight: 'clamp' });
-    return (
-      <div key={i} style={{
-        position: 'absolute',
-        width: 4, height: 4,
-        backgroundColor: '#C9A84C',
-        borderRadius: '50%',
-        opacity: op * exit,
-        transform: `translate(${(i * 54) % 1080}px, ${(i * 96) % 1920 - move}px)`
-      }} />
-    );
-  });
+  const dollarScale = interpolate(dollarSlam, [0, 1], [0, 1.5]);
+  const dollarPulse = interpolate(Math.sin(frame * 0.15), [-1, 1], [1, 1.1]);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", overflow: 'hidden' }}>
-      {/* Grid lines */}
+    <AbsoluteFill style={{ backgroundColor: "#0A0A0A", padding: 100 }}>
+      {/* Background Grid */}
+      <AbsoluteFill style={{ opacity: 0.1 }}>
+        {new Array(10).fill(0).map((_, i) => (
+          <div key={i} style={{ position: "absolute", top: i * 200, left: 0, right: 0, height: 2, backgroundColor: "#FFF" }} />
+        ))}
+      </AbsoluteFill>
+
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "flex-end", paddingBottom: 300, flexDirection: "row" }}>
+        <Bar height={400} delay={0} color="#FFF" />
+        <Bar height={600} delay={5} color="#FFF" />
+        <Bar height={900} delay={10} color="#C9A84C" />
+        <Bar height={500} delay={15} color="#FFF" />
+      </AbsoluteFill>
+
       <div style={{
-        position: 'absolute', width: '100%', height: '100%', opacity: gridOpacity,
-        backgroundImage: 'linear-gradient(rgba(201,168,76,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.3) 1px, transparent 1px)',
-        backgroundSize: '80px 80px'
+        position: "absolute",
+        top: 400,
+        left: "50%",
+        transform: `translateX(-50%) scale(${dollarScale * dollarPulse})`,
+        opacity: dollarSlam,
+        textAlign: "center"
+      }}>
+        <h2 style={{
+          fontSize: 200,
+          fontWeight: 900,
+          color: "#C9A84C",
+          margin: 0,
+          textShadow: "0 0 30px rgba(201,168,76,0.8)"
+        }}>
+          $$$
+        </h2>
+      </div>
+
+      {/* Axis lines */}
+      <div style={{
+        position: "absolute",
+        bottom: 300,
+        left: 200,
+        right: 200,
+        height: 4,
+        backgroundColor: "#C9A84C",
+        opacity: interpolate(frame, [0, 15], [0, 1])
       }} />
-
-      <AbsoluteFill style={{ transform: `scale(${parallax})`, opacity: exit }}>
-        <svg width="1080" height="1920" viewBox="0 0 1080 1920" style={{ filter: 'drop-shadow(0 0 15px rgba(201,168,76,0.4))' }}>
-          <path
-            d={path}
-            fill="none"
-            stroke="#C9A84C"
-            strokeWidth="12"
-            strokeDasharray="4000"
-            strokeDashoffset={4000 * (1 - lineProgress)}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ filter: `drop-shadow(0 0 ${10 * shimmer}px #C9A84C)` }}
-          />
-          
-          {/* Red data point pulse at bottom */}
-          {lineProgress > 0.8 && (
-             <circle
-               cx="600"
-               cy="1400"
-               r={interpolate(Math.sin(frame/10), [-1, 1], [15, 25])}
-               fill="#FF3333"
-               style={{ opacity: 0.8, filter: 'blur(8px)' }}
-             />
-          )}
-        </svg>
-      </AbsoluteFill>
-
-      {particles}
-
-      {/* Axis Labels */}
-      <AbsoluteFill style={{ padding: 60, justifyContent: 'flex-end', opacity: gridOpacity }}>
-         <div style={{ color: '#C9A84C', fontFamily: 'monospace', fontSize: 24 }}>TERMINAL ERROR: MARGIN_CRUSH_DETECTED</div>
-         <div style={{ color: '#FFF', fontFamily: 'monospace', fontSize: 18, opacity: 0.5 }}>STATUS: REVOKED</div>
-      </AbsoluteFill>
+      <div style={{
+        position: "absolute",
+        bottom: 300,
+        left: 200,
+        width: 4,
+        top: 200,
+        backgroundColor: "#C9A84C",
+        opacity: interpolate(frame, [0, 15], [0, 1])
+      }} />
     </AbsoluteFill>
   );
 };
