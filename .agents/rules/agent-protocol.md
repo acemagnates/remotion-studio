@@ -21,12 +21,17 @@ trigger: always_on
 * **Min Duration:** `durationInFrames` ≥ **75** (2.5s at 30fps). Round UP if shorter.
 
 ## 3. Dependencies & File Management
+* **INFRASTRUCTURE LOCKOUT (CRITICAL):** You are STRICTLY FORBIDDEN from modifying `.github/workflows/render-batch.yml`, `.github/workflows/render.yml`, or any files in `scripts/`. You must NEVER write your own scripts to check Remotion compositions. 
+* **WEBPACK PANIC BYPASS (CRITICAL):** If you ever see "Tried to serve the Webpack bundle... got no response" or "index.html does not exist", IGNORE IT COMPLETELY. It is a false positive perfectly handled by our config bypass. NEVER try to debug the bundler, clear cache, or rewrite workflows to fix it. Just proceed with your code instructions cleanly.
 * Use built-in file writing API tools exclusively. Do NOT use terminal commands like `mkdir`, `mkdir -p`, `mv`, or `cp` to create directories or manage files, as UNIX flags cause PowerShell errors and false positives.
 * Run commands ONE AT A TIME in PowerShell. No `&&` or `;` or `\;` chaining. Each tool call must be its own separate execution. ALWAYS use `--legacy-peer-deps`.
 * Version mismatch? Run `npx remotion upgrade --legacy-peer-deps`.
 
 ## 4. Execution Pipeline
-**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. **TOKEN LIMIT RULE: Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.** **CRITICAL:** The `<Composition id="...">` MUST perfectly match the requested clip type. Solid clips MUST be `id="clip-01-MG"` and green screen overlays MUST be `id="clip-01-MG-overlay"`. Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
+**Phase 1 — Code (BATCHING REQUIRED):** Clean slate first. Overwrite `src/Root.tsx` with current compositions. 
+* **PROJECT ISOLATION RULE (CRITICAL):** Do NOT overwrite old workspace files! You MUST extract the `Project ID` from the user's prompt (e.g., `Video104`). ALWAYS create a new folder for the new project (`src/clips/Video104/`) and place the new clips inside it (`src/clips/Video104/Clip01.tsx`).
+* **DYNAMIC EXPORT NAMING (CRITICAL):** To ensure dedicated export grouping on GitHub, the `<Composition id="...">` MUST perfectly match the requested clip type AND be prefixed by the Project ID. Solid clips MUST be `id="Video104-clip-01-MG"` and green screen overlays MUST be `id="Video104-clip-01-MG-overlay"`. Do NOT name the composition ID after the recipe. Ensure `src/index.ts` registers Root.
+* **TOKEN LIMIT RULE:** Never generate more than 3 clips in a single output turn. If tasked with 4+ clips, code exactly 3, trigger GitHub render, and then natively pause/yield to the user or proceed to the next batch.
 **Phase 2 — Install:** `npm install --legacy-peer-deps` then `npm install @remotion/media @remotion/three --legacy-peer-deps`
 **Phase 3: GitHub Render & Artifact Download:** Commit, push, trigger workflow natively. 
 * **Git Integrity & File Size Rules:** NEVER run `git add .` indiscriminately if there are large media files (.mp4, .webm, .mov) in the workspace. GitHub will reject pushes over 100MB. ALWAYS explicitly exclude them using `.gitignore` first (e.g., `echo "*.webm" >> .gitignore` etc) before adding, or only `git add` specific code files. Use separate commands (`git add .`, then `git commit -m`, then `git push`). Do NOT use `;` chaining. Never use `git ls-files --staged`.

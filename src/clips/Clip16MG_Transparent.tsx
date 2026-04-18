@@ -1,65 +1,57 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
-import { useMemo } from "react";
-import * as THREE from "three";
-
-const DustCloud = () => {
-  const frame = useCurrentFrame();
-  const { width, height } = useVideoConfig();
-  
-  const particles = useMemo(() => {
-    return new Array(30).fill(0).map(() => ({
-      position: new THREE.Vector3(
-        (Math.random() - 0.5) * 8,
-        (Math.random() - 0.5) * 8,
-        (Math.random() - 0.5) * 10
-      ),
-      size: Math.random() * 0.04 + 0.01,
-      parallax: Math.random() * 2 + 0.5
-    }));
-  }, []);
-
-  return (
-    <ThreeCanvas width={width} height={height}>
-      <ambientLight intensity={0.6} />
-      <pointLight position={[10, 10, 10]} intensity={1.5} />
-      {particles.map((p, i) => {
-        const driftX = Math.sin(frame * 0.008 + i) * 0.3;
-        const driftY = (frame * 0.006 * p.parallax) % 12 - 6;
-        const pos: [number, number, number] = [
-          p.position.x + driftX,
-          p.position.y - driftY,
-          p.position.z + (frame * 0.01) // slow drift forward
-        ];
-        return (
-          <mesh key={i} position={pos}>
-            <sphereGeometry args={[p.size, 12, 12]} />
-            <meshStandardMaterial 
-              color="#C9A84C" 
-              emissive="#C9A84C" 
-              emissiveIntensity={2} 
-              transparent 
-              opacity={0.9}
-            />
-          </mesh>
-        );
-      })}
-    </ThreeCanvas>
-  );
-};
 
 export const Clip16MG_Transparent = () => {
-    const frame = useCurrentFrame();
-    const { durationInFrames } = useVideoConfig();
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
 
-    const opacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" }) 
-                  * interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
+  // ACT 1: ENTRANCE
+  const entrance = spring({
+    frame,
+    fps,
+    config: { damping: 15 },
+  });
 
-    return (
-        <AbsoluteFill style={{ backgroundColor: "#00FF00" }}>
-            <AbsoluteFill style={{ opacity }}>
-                <DustCloud />
-            </AbsoluteFill>
-        </AbsoluteFill>
-    );
+  const textSlide = interpolate(entrance, [0, 1], [50, 0]);
+  const textOpacity = interpolate(entrance, [0, 1], [0, 1]);
+
+  // ACT 2: HOLD + EVOLUTION
+  const scale = interpolate(frame, [0, durationInFrames], [1, 1.05]);
+  const rotation = interpolate(frame, [0, durationInFrames], [0, 360]);
+
+  // ACT 3: EXIT
+  const exit = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
+  const ringShoot = interpolate(frame, [durationInFrames - 15, durationInFrames], [0, 2000], { extrapolateLeft: "clamp" });
+
+  return (
+    <AbsoluteFill>
+      {/* 3D Orbital Ring */}
+      <ThreeCanvas width={width} height={height} alpha={true}>
+        <ambientLight intensity={0.5} />
+        <pointLight position={[10, 10, 10]} intensity={2} color="#C9A84C" />
+        <mesh rotation={[Math.PI / 3, rotation * (Math.PI / 180), 0]} position={[0, -1, ringShoot / 100]}>
+          <torusGeometry args={[3.5, 0.05, 16, 100]} />
+          <meshStandardMaterial color="#C9A84C" emissive="#C9A84C" emissiveIntensity={2} />
+        </mesh>
+      </ThreeCanvas>
+
+      {/* Text */}
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", top: "20%", height: "20%" }}>
+        <h1
+          style={{
+            fontFamily: "Impact, sans-serif",
+            fontSize: 200,
+            color: "#FFFFFF",
+            margin: 0,
+            opacity: textOpacity * exit,
+            transform: `translateY(${textSlide}px) scale(${scale})`,
+            textShadow: "0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(201,168,76,0.3)",
+            letterSpacing: 10
+          }}
+        >
+          VALUABLE
+        </h1>
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
 };
