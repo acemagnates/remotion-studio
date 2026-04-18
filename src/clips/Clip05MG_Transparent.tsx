@@ -1,80 +1,72 @@
-import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
+import React from "react";
 
-const Fragment = ({ i, frame, exit }: { i: number; frame: number; exit: number }) => {
-  const { fps, durationInFrames } = useVideoConfig();
-  
-  // ACT 1: ENTRANCE (violent radial burst 0.5-1.0s)
-  const burst = spring({
-    frame: frame - 5,
-    fps,
-    config: { damping: 12, stiffness: 150, mass: 0.5 },
-  });
-
-  const angle = (i * 137.5) % 360; // Distribution
-  const speed = 200 + (i % 15) * 150;
-  const distance = burst * speed;
-  
-  // ACT 2: HOLD + EVOLUTION (slow drift in 3D space)
-  const slowDrift = interpolate(frame, [0, durationInFrames], [0, 80]);
-  const rotation = interpolate(frame, [0, durationInFrames], [0, angle * 0.5]);
-  
-  const color = i % 3 === 0 ? "#0A0A0A" : "#C9A84C";
-  
-  // Fake 3D depth
-  const translateZ = interpolate(frame, [0, durationInFrames], [0, i * 10]);
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        width: 150 + (i % 5) * 40,
-        height: 120 + (i % 3) * 60,
-        backgroundColor: color,
-        opacity: exit * 0.9,
-        clipPath: `polygon(${(i*17)%30}% ${(i*11)%20}%, 100% ${(i*7)%30}%, ${(80+i*3)%100}% 100%, 0% ${(70+i*2)%100}%)`,
-        transform: `translate(-50%, -50%) translate(${Math.cos(angle) * (distance + slowDrift)}px, ${Math.sin(angle) * (distance + slowDrift)}px) perspective(1000px) rotateX(${rotation}deg) rotateY(${rotation * 0.5}deg) translateZ(${translateZ}px)`,
-        boxShadow: i % 3 !== 0 ? "0 0 30px rgba(201,168,76,0.6)" : "0 10px 40px rgba(0,0,0,0.8)",
-        border: "1px solid rgba(255,255,255,0.1)",
-      }}
-    />
-  );
-};
-
-export const Clip05MG_Transparent: React.FC = () => {
+export const Clip05MG_Transparent = () => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames } = useVideoConfig();
 
-  // ACT 3: EXIT (0.3–0.5s)
-  const exit = interpolate(
+  // ACT 1 — ENTRANCE (0.5s = 15 frames)
+  const entrance = spring({
     frame,
-    [durationInFrames - 12, durationInFrames],
-    [1, 0],
-    { extrapolateLeft: "clamp" }
-  );
+    fps,
+    config: { damping: 15, stiffness: 100 },
+  });
+  
+  const lineDraw = interpolate(frame, [0, 15], [0, 800], { extrapolateRight: "clamp" });
+  const panelDrop = interpolate(entrance, [0, 1], [100, 0]);
+  const textFade = interpolate(frame, [10, 20], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+
+  // ACT 2 — HOLD + EVOLUTION (1.5s = 45 frames)
+  const letterSpacing = interpolate(frame, [0, durationInFrames], [0.1, 0.4]);
+  const panelDriftX = interpolate(frame, [0, durationInFrames], [0, 10]);
+
+  // ACT 3 — EXIT (0.5s = 15 frames)
+  const exitStart = durationInFrames - 15;
+  const lineRetract = interpolate(frame, [exitStart, durationInFrames], [800, 0], { extrapolateLeft: "clamp" });
+  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#00FF00', overflow: 'hidden' }}>
-      <AbsoluteFill style={{ perspective: 2000 }}>
-        {new Array(18).fill(0).map((_, i) => (
-          <Fragment key={i} i={i} frame={frame} exit={exit} />
-        ))}
-      </AbsoluteFill>
-      
-      {/* Central light burst flash at start */}
-      {frame < 20 && (
+    <AbsoluteFill style={{ backgroundColor: "#00FF00" }}>
+      <div style={{
+        position: "absolute",
+        bottom: "15%",
+        left: "10%",
+        opacity: exitOpacity,
+        transform: `translateY(${panelDrop}px) translateX(${panelDriftX}px)`
+      }}>
+        {/* Smoked Glass Panel */}
+        <div style={{
+          backgroundColor: "rgba(10, 10, 10, 0.85)",
+          padding: "30px 60px",
+          borderTop: "1px solid #C9A84C",
+          width: "max-content",
+          position: "relative"
+        }}>
+          {/* Gold Glowing Line */}
           <div style={{
-              position: 'absolute',
-              top: '50%', left: '50%',
-              width: 500, height: 500,
-              transform: 'translate(-50%, -50%)',
-              background: 'radial-gradient(circle, white 0%, rgba(201,168,76,0.8) 40%, transparent 70%)',
-              opacity: interpolate(frame, [0, 15], [1, 0]),
-              filter: 'blur(40px)',
+            position: "absolute",
+            top: -1,
+            left: 0,
+            width: (frame >= exitStart ? lineRetract : lineDraw),
+            height: 2,
+            backgroundColor: "#C9A84C",
+            boxShadow: "0 0 10px #C9A84C"
           }} />
-      )}
+          
+          <h2 style={{
+            fontFamily: "Arial, sans-serif",
+            fontSize: 48,
+            fontWeight: 700,
+            color: "white",
+            margin: 0,
+            opacity: textFade,
+            letterSpacing: `${letterSpacing}em`,
+            textTransform: "uppercase"
+          }}>
+            TOP-SECRET MILITARY LAB
+          </h2>
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

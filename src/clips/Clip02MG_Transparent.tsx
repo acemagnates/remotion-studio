@@ -1,113 +1,100 @@
-import React, { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
-import { ThreeCanvas } from "@remotion/three";
+import React, { useMemo } from "react";
 
-const GoldParticles = ({ frame }: { frame: number }) => {
-  const { durationInFrames } = useVideoConfig();
-  const burstFrame = 45; // 1.5s
+const Particle = ({ i, frame, exit }: { i: number; frame: number; exit: number }) => {
+  const seed = i * 133.7;
+  const angle = (i / 15) * Math.PI * 2;
+  const speed = 2 + (i % 5);
+  const driftX = Math.cos(angle) * frame * speed;
+  const driftY = Math.sin(angle) * frame * speed;
   
-  const count = 30;
-  const particles = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < count; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        const speed = 2 + Math.random() * 5;
-        temp.push({ theta, phi, speed });
-    }
-    return temp;
-  }, []);
-
-  if (frame < burstFrame) return null;
-
   return (
-    <group>
-      {particles.map((p, i) => {
-        const progress = interpolate(frame, [burstFrame, durationInFrames], [0, 5], {
-            extrapolateLeft: "clamp",
-        });
-        const distance = progress * p.speed;
-        const opacity = interpolate(frame, [burstFrame, burstFrame + 5, durationInFrames - 10, durationInFrames], [0, 1, 1, 0], {
-            extrapolateLeft: "clamp",
-        });
-        
-        const x = distance * Math.sin(p.phi) * Math.cos(p.theta);
-        const y = distance * Math.sin(p.phi) * Math.sin(p.theta);
-        const z = distance * Math.cos(p.phi);
-
-        return (
-          <mesh key={i} position={[x, y, z]}>
-            <sphereGeometry args={[0.1, 6, 6]} />
-            <meshStandardMaterial color="#C9A84C" emissive="#C9A84C" emissiveIntensity={2} transparent opacity={opacity} />
-          </mesh>
-        );
-      })}
-    </group>
+    <div
+      style={{
+        position: "absolute",
+        width: 6,
+        height: 6,
+        backgroundColor: "#C9A84C",
+        borderRadius: "50%",
+        opacity: (0.4 + (i % 5) * 0.1) * exit,
+        transform: `translate(${width/2 + driftX}px, ${height/2 + driftY}px)`,
+        boxShadow: "0 0 10px #C9A84C",
+      }}
+    />
   );
 };
 
-export const Clip02MG_Transparent: React.FC = () => {
+const { width, height } = { width: 1080, height: 1920 }; // Just for the Particle helper if needed, but better passed down
+
+export const Clip02MG_Transparent = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames, width, height } = useVideoConfig();
 
-  // ACT 1: ENTRANCE (0.5s = 15 frames)
-  // Digits spring slam from below with heavy vault physics (damping: 15, stiffness: 80, mass: 2)
+  // ACT 1 — ENTRANCE (0.5s = 15 frames): Slide up from mask
   const entrance = spring({
     frame,
     fps,
-    config: { damping: 15, stiffness: 80, mass: 2 },
+    config: { damping: 15, stiffness: 100 },
   });
+  const slideY = interpolate(entrance, [0, 1], [300, 0]);
 
-  const translateY = interpolate(entrance, [0, 1], [1000, 0]);
+  // ACT 2 — HOLD + EVOLUTION (1.5s = 45 frames)
+  // Digits roll up to $1B
+  const rollProgress = spring({
+    frame: frame - 5,
+    fps,
+    config: { damping: 20, stiffness: 60 },
+  });
+  const currentVal = Math.floor(interpolate(rollProgress, [0, 1], [0, 1000000000]));
+  const scale = interpolate(frame, [45, 60], [1, 1.05], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
-  // ACT 2: HOLD + EVOLUTION
-  // Digits rapidly spin down from 90 to 60 and lock at 1.5s (45 frames)
-  const counterValue = Math.floor(
-    interpolate(frame, [0, 45], [90, 60], {
-      extrapolateRight: "clamp",
-      easing: Easing.bezier(0.33, 1, 0.68, 1),
-    })
-  );
+  // ACT 3 — EXIT (0.5s = 15 frames)
+  const exitStart = durationInFrames - 15;
+  const exitOpacity = interpolate(frame, [exitStart, durationInFrames], [1, 0], { extrapolateLeft: "clamp" });
 
-  // Number pulses scale (100%→108%) continuously
-  const pulse = interpolate(
-    Math.sin((frame / 30) * Math.PI * 2),
-    [-1, 1],
-    [1, 1.08]
-  );
-
-  // ACT 3: EXIT
-  // Number and particles scale down to 0 over 0.3s (9 frames)
-  const exitScale = interpolate(
-    frame,
-    [durationInFrames - 9, durationInFrames],
-    [1, 0],
-    { extrapolateLeft: "clamp" }
-  );
+  // Particles fire after count hits $1B (approx frame 45)
+  const showParticles = frame > 40;
+  const particleFrame = frame - 40;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: '#00FF00', overflow: 'hidden' }}>
-      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", transform: `translateY(${translateY}px) scale(${pulse * exitScale})` }}>
-        <div style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
-             <ThreeCanvas width={width} height={height}>
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} />
-                <GoldParticles frame={frame} />
-             </ThreeCanvas>
+    <AbsoluteFill style={{ backgroundColor: "#00FF00" }}>
+      {showParticles && new Array(20).fill(0).map((_, i) => (
+        <div key={i} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
+           <div style={{
+              width: 10,
+              height: 10,
+              backgroundColor: "#C9A84C",
+              borderRadius: "50%",
+              opacity: exitOpacity,
+              transform: `translate(${(Math.cos(i) * particleFrame * 10)}px, ${Math.sin(i) * particleFrame * 10}px)`,
+              boxShadow: "0 0 15px #C9A84C"
+           }} />
         </div>
-        
-        <h1 style={{
-          fontFamily: "sans-serif",
-          fontSize: 400,
-          fontWeight: 900,
-          color: "white",
-          WebkitTextStroke: "8px #C9A84C",
-          textShadow: "0 0 20px rgba(201,168,76,0.8), 0 0 40px rgba(201,168,76,0.4), 0 10px 40px rgba(0,0,0,0.8)",
-          margin: 0,
-          zIndex: 10
+      ))}
+
+      <AbsoluteFill style={{ 
+        justifyContent: "center", 
+        alignItems: "center",
+        transform: `translateY(${slideY}px) scale(${scale})`,
+        opacity: exitOpacity
+      }}>
+        <div style={{
+          overflow: "hidden",
+          padding: "20px"
         }}>
-          {counterValue}
-        </h1>
+          <h1 style={{
+            fontFamily: "Arial, sans-serif",
+            fontSize: 140,
+            fontWeight: 900,
+            color: "white",
+            margin: 0,
+            WebkitTextStroke: "2px #C9A84C",
+            textShadow: "0 10px 30px rgba(0,0,0,0.5)",
+            textAlign: "center"
+          }}>
+            ${currentVal.toLocaleString()}
+          </h1>
+        </div>
       </AbsoluteFill>
     </AbsoluteFill>
   );
