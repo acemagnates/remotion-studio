@@ -1,6 +1,6 @@
+import React, { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate, Easing } from "remotion";
 import { ThreeCanvas } from "@remotion/three";
-import { useMemo } from "react";
 
 const GoldParticles = ({ frame }: { frame: number }) => {
   const { durationInFrames } = useVideoConfig();

@@ -1,3 +1,4 @@
+import React from "react";
 import { Composition } from "remotion";
 import { Clip02MG_Transparent } from "./clips/Clip02MG_Transparent";
 import { Clip04MG } from "./clips/Clip04MG";

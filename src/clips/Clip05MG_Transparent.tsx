@@ -1,3 +1,4 @@
+import React from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 
 const Fragment = ({ i, frame, exit }: { i: number; frame: number; exit: number }) => {
