@@ -8,6 +8,9 @@ import { Clip09MG } from "./clips/Clip09MG";
 import { Clip12MG_Transparent } from "./clips/Clip12MG_Transparent";
 import { Clip14MG } from "./clips/Clip14MG";
 import { Clip16MG_Transparent } from "./clips/Clip16MG_Transparent";
+import { Clip20MG_Transparent } from "./clips/Clip20MG_Transparent";
+import { Clip21MG } from "./clips/Clip21MG";
+import { Clip22MG } from "./clips/Clip22MG";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -79,6 +82,30 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="clip-16-MG-transparent"
         component={Clip16MG_Transparent}
+        durationInFrames={90}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-20-MG-transparent"
+        component={Clip20MG_Transparent}
+        durationInFrames={105}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-21-MG"
+        component={Clip21MG}
+        durationInFrames={90}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="clip-22-MG"
+        component={Clip22MG}
         durationInFrames={90}
         fps={30}
         width={1080}
