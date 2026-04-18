@@ -1,0 +1,52 @@
+name: Batch Render
+on:
+  workflow_dispatch:
+
+jobs:
+  identify:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Identify Compositions
+        id: set-matrix
+        run: |
+          COMPS=$(npx remotion compositions --json | jq -c '[.[] | {id: .id, transparent: (.id | contains("transparent"))}]')
+          echo "matrix=$COMPS" >> $GITHUB_OUTPUT
+
+  render:
+    needs: identify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.identify.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Install OS Dependencies
+        run: sudo apt-get update && sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libpango-1.0-0 libcairo2 libxcomposite1 libxdamage1 libxfixes3 libxrandr2
+      - name: Ensure Browser
+        run: npx remotion browser ensure
+      - name: Render
+        run: |
+          if [[ "${{ matrix.transparent }}" == "true" ]]; then
+            npx remotion render src/index.ts ${{ matrix.id }} renders/${{ matrix.id }}.mov --image-format=png --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le
+          else
+            npx remotion render src/index.ts ${{ matrix.id }} renders/${{ matrix.id }}.mp4 --codec=h264
+          fi
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clip-${{ matrix.id }}
+          path: renders/
